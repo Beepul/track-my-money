@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  first_name String 
+  last_name String 
+  email String @unique
+  password String?
+  image String?
+  googleId String? @unique
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+  categories Category[]
+}
+
+model Transaction {
+  id String @id @default(uuid())
+  userId String 
+  title String 
+  amount Float
+  type TransactionType
+  categoryId String
+  date DateTime
+  note String? 
+
+  user User @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String 
+  userId String 
+  transactions Transaction[]
+  icon String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  @@unique([name, userId]) // Ensures one user can't have duplicate category names
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
