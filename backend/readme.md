@@ -60,6 +60,11 @@ Update User Info: http://localhost:5000/api/v1/user/update-info
 
 
 ### Transaction Routes
+Add transaction: http://localhost:5000/api/v1/transaction
+Delete transaction
+Get all transaction (type, category, from_date, to_date, title, pagination): http://localhost:5000/api/v1//transaction/?t=wa&ty=INCOME&c=mymusic&fd=2025-07-20T10:26:40.766Z&td=2025-07-20T10:40:40.766Z&limit=10&page=1
+Get transaction by id
+Edit transaction
 
 
 ### Category Routes

@@ -34,11 +34,12 @@ model Transaction {
   amount Float
   type TransactionType
   categoryId String
-  date DateTime
+  date DateTime 
   note String? 
 
   user User @relation(fields: [userId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
+  @@unique([id, userId])
 }
 
 model Category {
@@ -51,6 +52,7 @@ model Category {
 
   user User @relation(fields: [userId], references: [id])
   @@unique([name, userId]) // Ensures one user can't have duplicate category names
+  @@unique([id, userId])
 }
 
 enum TransactionType {
