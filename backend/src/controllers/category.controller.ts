@@ -57,6 +57,9 @@ const getAllCategory = catchAsync(async (req: Request, res: Response, next: Next
         where: {
             userId: currentUser?.id!
         }, 
+        include: {
+            transactions: true
+        },
         orderBy: {
             createdAt: 'desc'
         }
@@ -159,10 +162,40 @@ const editCategory = catchAsync(async (req: Request, res: Response, next: NextFu
     })
 })
 
+const getCategoryById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const {id} = req.params
+    const currentUser = req.userInfo
+
+    const category = await prisma.category.findUnique({
+        where: {
+            id_userId: {
+                id,
+                userId: currentUser?.id!
+            }
+        }, include: {
+            transactions: true
+        }
+    })
+
+    if(!category) {
+        throw {
+            message: `Category with id ${id} doesnot exist`,
+            status: 400
+        }
+    }
+
+    res.status(200).json({
+        message: 'Category details',
+        result: category,
+        meta: null
+    })
+})
+
 
 export {
     addCategory,
     getAllCategory,
     deleteCategory,
-    editCategory
+    editCategory,
+    getCategoryById
 }

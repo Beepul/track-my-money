@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from "express"
 import catchAsync from "../utils/catchAsync"
 import prisma from "../config/prisma.client"
 import bcrypt from "bcryptjs"
-import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../config/jwt"
+import { generateAccessToken, generatePwdResetToken, generateRefreshToken, verifyAccessToken, verifyPwdResetToken, verifyRefreshToken } from "../config/jwt"
 import path from "path"
 import fs from 'fs'
+import sendEmail from "../config/mailer.config"
 
 
 const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -165,7 +166,7 @@ const logOutUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 
-const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const updatePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const {oldPassword, newPassword} = req.body
 
     const currentUser = req.userInfo
@@ -255,6 +256,115 @@ const updateUserInfo = catchAsync(async (req: Request, res: Response, next: Next
 })
 
 
+const forgetPassword = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    const {email} = req.body 
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: email.trim()
+        }
+    })
+
+    if(!user) {
+        throw {
+            message: `User with email: ${email} doesnot exist`,
+            status: 400
+        }
+    }
+
+    const toTitleCase = (name: string): string => {
+        return name
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
+    const pwdResetHTMLPath = path.join(__dirname, '..', 'mails', 'pwd-reset.template.html')
+    
+    const pwdResetHTML = fs.readFileSync(pwdResetHTMLPath, 'utf-8')
+
+    const pwdResetToken = generatePwdResetToken(user.id, '1m')
+
+    const mailData = {
+        name: toTitleCase(user.first_name) + ' ' + toTitleCase(user.last_name),
+        expires_in: '1 minute',
+        resetLink: `http://localhost:3000/auth/reset-password?t=${pwdResetToken}`
+    };
+
+    console.log(mailData)
+    
+    const replacedHTML = pwdResetHTML.replace(/{{(.*?)}}/g, (_, key) => {
+        return mailData[key.trim() as keyof typeof mailData] || ''
+    })
+
+    const sentMail = await sendEmail({
+        to: user.email,
+        subject: 'T2M Reset Password',
+        html: replacedHTML
+    })
+
+    if(sentMail !== 'OK'){
+        throw {
+            message: 'Failed to send mail, Please try again later',
+            status: 400
+        }
+    }
+
+    res.status(200).json({
+        result: null,
+        meta: null,
+        message: 'Password reset link has been sent to your mail'
+    })
+    
+})
+
+
+const resetPassword = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    const {token} = req.params
+    const {password} = req.body
+
+    const decoded = verifyPwdResetToken(token as string) as {userId: string}
+
+    if(!decoded) {
+        throw {
+            message: 'Token invalid, Please use another token',
+            status: 400
+        }
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: decoded.userId 
+        }
+    })
+
+    if(!user) {
+        throw {
+            message: 'User not found',
+            status: 400
+        }
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt)
+
+    await prisma.user.update({
+        where: {
+            id: decoded.userId
+        },
+        data: {
+            password: hashedPassword
+        }
+    })
+
+    res.status(200).json({
+        result: null,
+        meta: null,
+        message: 'Your password has been reset, Please login to continue further'
+    })
+})
+
+
 
 
 export {
@@ -262,6 +372,8 @@ export {
     loginUser,
     logOutUser,
     refreshTokenCtrl,
-    resetPassword,
-    updateUserInfo
+    updatePassword,
+    updateUserInfo,
+    forgetPassword,
+    resetPassword
 }

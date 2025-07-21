@@ -1,6 +1,6 @@
 import express from 'express'
-import { loginUserSchema, registerUserSchema, resetPasswordSchema, updateUserSchema } from '../validations/user.schema'
-import { loginUser, logOutUser, refreshTokenCtrl, registerUser, resetPassword, updateUserInfo } from '../controllers/user.controller'
+import { forgetPasswordSchema, loginUserSchema, registerUserSchema, resetPasswordSchema, updatePasswordSchema, updateUserSchema } from '../validations/user.schema'
+import { forgetPassword, loginUser, logOutUser, refreshTokenCtrl, registerUser, resetPassword, updatePassword, updateUserInfo } from '../controllers/user.controller'
 import { validateBody } from '../validations/validator'
 import upload from '../middlewares/multer.middleware'
 import { isAuthenticated } from '../middlewares/auth.middleware'
@@ -11,8 +11,10 @@ router.post('/register', upload.single('image'), validateBody(registerUserSchema
 router.post('/login', validateBody(loginUserSchema), loginUser)
 router.get('/log-out', logOutUser)
 router.get('/refresh-token', refreshTokenCtrl)
-router.put('/reset-password', isAuthenticated, validateBody(resetPasswordSchema) ,resetPassword)
+router.put('/update-password', isAuthenticated, validateBody(updatePasswordSchema) , updatePassword)
 router.put('/update-info',  isAuthenticated, upload.single('image'), validateBody(updateUserSchema) , updateUserInfo)
+router.post('/forget-password', validateBody(forgetPasswordSchema), forgetPassword)
+router.put('/reset-password/:token', validateBody(resetPasswordSchema), resetPassword)
 
 
 export default router

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Your Password</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 20px 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        h2 {
+            color: #2d2d2d;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            color: #444;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background-color 0.3s ease;
+            margin: 14px 0;
+        }
+
+        .button:hover {
+            background-color: #005fc1;
+        }
+
+        .footer {
+            border-top: 1px solid #b0b0b04d;
+            padding-top: 6px;
+            margin-top: 20px;
+        }
+
+        .footer em {
+            font-size: 13px;
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Password Reset Request</h2>
+
+        <p>Hi {{name}},</p>
+
+        <p>We received a request to reset your password for your Track My Money account. Click the button below to reset
+            it:</p>
+
+        <a href="{{resetLink}}" class="button">Reset My Password</a>
+
+        <p>This link will expire in {{expires_in}}. If you didn’t request a password reset, you can safely ignore this email.
+        </p>
+
+        <p>Thanks,<br />The Track My Money Team</p>
+
+        <div class="footer">
+            <p><em>Please do not reply to this email. This inbox is not monitored.</em></p>
+        </div>
+    </div>
+
+</body>
+
+</html>

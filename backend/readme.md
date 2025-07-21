@@ -48,23 +48,25 @@
 Base route: http://localhost:5000/api/v1
 Health Check: http://localhost:5000/api/v1/health
 Image route: http://localhost:5000/api/v1/uploads/{filename}
+404 route: http://localhost:5000/*
 
 ### User Routes
 Register: http://localhost:5000/api/v1/user/register
 Login: http://localhost:5000/api/v1/user/login
 Refresh Token: http://localhost:5000/api/v1/user/refresh-token
 Log Out: http://localhost:5000/api/v1/user/log-out
-Forget Password:
-Reset Password: http://localhost:5000/api/v1/user/reset-password
+Update Password: http://localhost:5000/api/v1/user/update-password
 Update User Info: http://localhost:5000/api/v1/user/update-info
+Forget Password: http://localhost:5000/api/v1/user/forget-password
+Reset Password: http://localhost:5000/api/v1/user/reset-password
 
 
 ### Transaction Routes
 Add transaction: http://localhost:5000/api/v1/transaction
-Delete transaction
+Delete transaction: http://localhost:5000/api/v1/transaction/:id
 Get all transaction (type, category, from_date, to_date, title, pagination): http://localhost:5000/api/v1//transaction/?t=wa&ty=INCOME&c=mymusic&fd=2025-07-20T10:26:40.766Z&td=2025-07-20T10:40:40.766Z&limit=10&page=1
-Get transaction by id
-Edit transaction
+Get transaction by id: http://localhost:5000/api/v1/transaction/:id
+Edit transaction: http://localhost:5000/api/v1/transaction/:id
 
 
 ### Category Routes
@@ -72,5 +74,5 @@ Add Category: http://localhost:5000/api/v1/category
 Edit Category: http://localhost:5000/api/v1/category/:id
 Delete Category: http://localhost:5000/api/v1/category/:id
 Get all Category: http://localhost:5000/api/v1/category
-<!-- Get Category by id -->
+Get Category by id: http://localhost:5000/api/v1/category/:id
 Get all category Icons: http://localhost:5000/api/v1/category/icon-list
