@@ -2,13 +2,13 @@ import nodeMailer from 'nodemailer'
 
 
 const transporter = nodeMailer.createTransport({
-    service: 'Gmail',
-    host: "smtp.gmail.com",
+    service: process.env.SMTP_SERVICE,
+    host: process.env.SMTP_HOST,
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
-        user: "bipultestmail@gmail.com",
-        pass: "plex bxen euoj mlsu",
+        user: process.env.SMTP_MAIL,
+        pass: process.env.SMTP_PASSWORD,
     },
 });
 
@@ -21,7 +21,7 @@ type MailOption = {
 const sendEmail = async (options: MailOption) => {
     try {
         await transporter.sendMail({
-            from: "bipultestmail@gmail.com",
+            from: process.env.SMTP_MAIL,
             to: options.to,
             subject: options.subject,
             html: options.html
