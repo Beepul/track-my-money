@@ -11,7 +11,7 @@ export default function DashboardLayout({children}: {
                 <DashboardHeader />
             </div>
             <div className="flex flex-1">
-                <div className="min-h-full">
+                <div className="min-h-full hidden lg:block">
                     <DashboardSideBar />
                 </div>
                 <main className="flex-1 p-6">
