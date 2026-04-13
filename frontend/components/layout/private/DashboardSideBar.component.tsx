@@ -1,49 +1,60 @@
 import Link from "next/link";
-import { ChartBar, House, Plus, Settings, Tag, Tags } from 'lucide-react';
+import { ChartBar, House, PanelLeft, Plus, Settings, Tag, Tags } from 'lucide-react';
 
 export default function DashboardSideBar() {
     return (
-        <aside className="bg-white lg:p-6 p-3 h-full shadow-sm">
-            <Link href={"/"} className="flex gap-2 items-center text-t2m-text-primary mb-8">
-                <span className="bg-t2m-primary py-1 px-2 text-xs inline-block text-white rounded-md font-semibold">T2M</span> 
-                <span className="font-bold">
-                    Track My Money 
-                </span>
-            </Link>
-            <div>
-                <ul>
-                    <li className="mb-8">
-                        <Link href={"#"} className="flex items-center gap-2 hover:text-t2m-primary transition-all duration-300 text-t2m-primary">
-                            <House size={16}/>
-                            Dashboard
-                        </Link>
-                    </li>
-                    <li className="mb-8">
-                        <Link href={"#"} className="flex items-center gap-2 hover:text-t2m-primary transition-all duration-300">
-                            <Plus size={16}/>
-                            Transaction
-                        </Link>
-                    </li>
-                    <li className="mb-8">
-                        <Link href={"#"} className="flex items-center gap-2 hover:text-t2m-primary transition-all duration-300">
-                            <Tags size={16}/>
-                            Categories
-                        </Link>
-                    </li>
-                    <li className="mb-8">
-                        <Link href={"#"} className="flex items-center gap-2 hover:text-t2m-primary transition-all duration-300">
-                            <ChartBar size={16}/>
-                            Reports
-                        </Link>
-                    </li>
-                    <li className="mb-8">
-                        <Link href={"#"} className="flex items-center gap-2 hover:text-t2m-primary transition-all duration-300">
-                            <Settings size={16}/>
-                            Settings
-                        </Link>
-                    </li>
-                </ul>
+        <aside className="border-r">
+            <div className="w-[225px]">
+                <DashboardMenu />
             </div>
         </aside>
+    )
+}
+
+
+export const MobileSideBar = () => {
+    return (
+        <div className="px-4">
+            <DashboardMenu />
+        </div>
+    )
+}
+
+
+
+const DashboardMenu = () => {
+    return (
+        <ul className="p-5">
+            <li className="mb-3">
+                <Link href={"/dashboard"} className="flex items-center gap-2 p-3 rounded-sm transition-all duration-300 text-t2m-primary bg-t2m-bg-primary">
+                    <House size={16}/>
+                    Dashboard
+                </Link>
+            </li>
+            <li className="mb-3">
+                <Link href={"/dashboard/transaction/add"} className="flex items-center gap-2 p-3 rounded-sm hover:text-t2m-primary hover:bg-gray-50 transition-all duration-300">
+                    <Plus size={16}/>
+                    Transaction
+                </Link>
+            </li>
+            <li className="mb-3">
+                <Link href={"#"} className="flex items-center gap-2 p-3 rounded-sm hover:text-t2m-primary hover:bg-gray-50 transition-all duration-300">
+                    <Tags size={16}/>
+                    Categories
+                </Link>
+            </li>
+            <li className="mb-3">
+                <Link href={"#"} className="flex items-center gap-2 p-3 rounded-sm hover:text-t2m-primary hover:bg-gray-50 transition-all duration-300">
+                    <ChartBar size={16}/>
+                    Reports
+                </Link>
+            </li>
+            <li className="mb-3">
+                <Link href={"#"} className="flex items-center gap-2 p-3 rounded-sm hover:text-t2m-primary hover:bg-gray-50 transition-all duration-300">
+                    <Settings size={16}/>
+                    Settings
+                </Link>
+            </li>
+        </ul>
     )
 }

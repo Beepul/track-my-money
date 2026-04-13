@@ -20,6 +20,8 @@ const registerUser = catchAsync(async (req: Request, res: Response, next: NextFu
         }
     }
 
+    console.log("Here:::", data)
+
     const existingUser = await prisma.user.findUnique({
         where: { email: data.email }
     })

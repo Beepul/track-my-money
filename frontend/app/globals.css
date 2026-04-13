@@ -11,6 +11,7 @@
   --text-t2m-secondary: rgb(75, 85, 99);
   --bg-t2m-primary: rgb(238, 250, 255);
   --bg-t2m-secondary: rgb(220, 252, 231);
+  --bg-t2m-gray: #F9FAFB;
   --shadow-t2m-banner: 0 25px 32px 10px rgb(87, 87, 87);
   --shadow-t2m-fCard: 0px 4px 10px 0px rgb(181, 181, 181);
   --color-t2m-footer: rgb(17, 24, 39);
@@ -57,6 +58,7 @@
   --color-t2m-text-secondary: var(--text-t2m-secondary);
   --color-t2m-bg-primary: var(--bg-t2m-primary);
   --color-t2m-bg-secondary: var(--bg-t2m-secondary);
+  --color-t2m-bg-gray: var(--bg-t2m-gray);
   --color-t2m-shadow-banner: var(--shadow-t2m-banner);
   --color-t2m-shadow-fCard: var(--shadow-t2m-fCard);
   --color-t2m-footer: var(--color-t2m-footer);

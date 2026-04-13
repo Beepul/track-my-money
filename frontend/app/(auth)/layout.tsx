@@ -1,11 +1,20 @@
 import FooterComponent from "@/components/layout/public/Footer.component";
 import HeaderComponent from "@/components/layout/public/Header.component";
 import { Check } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 
-export default function AuthLayout({children}: {
+export default async function AuthLayout({children}: {
     children: React.ReactNode
 }) {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("T2M_LOGIN")?.value;
+
+    const isLoggedIn = !!accessToken;
+
+    if(isLoggedIn) return redirect('/dashboard')
+        
     return (
         <main>
             <HeaderComponent />
