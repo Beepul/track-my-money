@@ -19,6 +19,7 @@ export async function registerUserApi(payload:RegisterPayloadType):Promise<Regis
         },
         body: JSON.stringify(payload)
     })
+
     const data = await res.json();
     if (!res.ok){
         return {
@@ -26,7 +27,7 @@ export async function registerUserApi(payload:RegisterPayloadType):Promise<Regis
             message: data.message || "Registration failed",
         };
     }
-    console.log("Hurry",data)
+    
     return {
         success: true,
         message: ''

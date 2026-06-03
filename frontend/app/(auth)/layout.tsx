@@ -8,12 +8,6 @@ import { redirect } from "next/navigation";
 export default async function AuthLayout({children}: {
     children: React.ReactNode
 }) {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("T2M_LOGIN")?.value;
-
-    const isLoggedIn = !!accessToken;
-
-    if(isLoggedIn) return redirect('/dashboard')
         
     return (
         <main>

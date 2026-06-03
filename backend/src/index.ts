@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import { errorHandler } from './middlewares/error.middleware';
 import mainRouter from './routes'
 import path from 'path';
+import multer from 'multer';
 
 dotenv.config();
 
@@ -34,6 +35,17 @@ app.use((_req: Request, _res: Response, next: NextFunction) => {
     })
 })
 
+app.use((err: Error, _req: Request, res: Response, next: NextFunction): void => {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ message: `Multer error: ${err.message}` });
+    return;
+  }
+  next(err); // pass non-multer errors down to errorHandler
+});
+
+
+
+app.use(errorHandler);
 
 
 
@@ -43,5 +55,4 @@ app.listen(port, () => {
 
 
 
-app.use(errorHandler);
 

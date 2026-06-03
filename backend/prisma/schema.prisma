@@ -36,6 +36,7 @@ model Transaction {
   categoryId String
   date DateTime 
   note String? 
+  image String?
 
   user User @relation(fields: [userId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
@@ -44,7 +45,7 @@ model Transaction {
 
 model Category {
   id String @id @default(uuid())
-  name String 
+  name String @unique
   userId String 
   transactions Transaction[]
   icon String

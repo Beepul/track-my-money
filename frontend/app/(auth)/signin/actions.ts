@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { SignInSchema } from "@/lib/zod.definitions";
 import { signInUserApi } from "../api";
+import { redirect } from "next/navigation";
 
 export type SignInFormState = {
     success?: boolean;
@@ -48,8 +49,6 @@ export async function signIn(_prevState: SignInFormState, form: FormData): Promi
     }
   }
 
-  console.log("Hurry", userData)
-
   if (!userData.data?.accessToken) {
     return {
             success: false,
@@ -68,6 +67,8 @@ export async function signIn(_prevState: SignInFormState, form: FormData): Promi
     maxAge: 60 * 60 * 24 * 4,
     path: '/'
   })
+
+  redirect("/dashboard")
 
   return { 
     success: true,

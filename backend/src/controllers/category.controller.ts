@@ -6,6 +6,7 @@ import { promises as fs } from 'fs';
 
 const addCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const {name, icon} = req.body 
+    console.log({name,icon})
     const currentUser = req.userInfo
 
     const isExisting = await prisma.category.findUnique({
@@ -56,9 +57,6 @@ const getAllCategory = catchAsync(async (req: Request, res: Response, next: Next
     const categories = await prisma.category.findMany({
         where: {
             userId: currentUser?.id!
-        }, 
-        include: {
-            transactions: true
         },
         orderBy: {
             createdAt: 'desc'
@@ -191,11 +189,38 @@ const getCategoryById = catchAsync(async (req: Request, res: Response, next: Nex
     })
 })
 
+const getIconList = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    console.log("hellooo")
+    const iconsPath = path.join(__dirname, '..', '..', 'uploads', 'catIcons')
+    console.log(iconsPath)
+
+    try{
+        const files = await fs.readdir(iconsPath)
+
+        console.log(files)
+
+        res.status(200).json({
+            result: files, 
+            message: 'All category icons available on server',
+            meta: null
+        })
+
+    }catch (error: any) {
+        throw {
+            message: error.message || 'Error fetching icon list',
+            status: 400
+        }
+    }
+})
+
+
+
 
 export {
     addCategory,
     getAllCategory,
     deleteCategory,
     editCategory,
-    getCategoryById
+    getCategoryById,
+    getIconList
 }

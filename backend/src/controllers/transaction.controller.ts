@@ -6,6 +6,7 @@ const addTransaction = catchAsync(async (req: Request, res: Response, next: Next
     const { title, amount, note, type, categoryId, date } = req.body
 
     const currentUser = req.userInfo
+    const image = req.file?.filename || null;
 
     const category = await prisma.category.findUnique({
         where: {
@@ -25,13 +26,14 @@ const addTransaction = catchAsync(async (req: Request, res: Response, next: Next
 
     const transaction = await prisma.transaction.create({
         data: {
-            amount,
+            amount: parseFloat(amount),
             title: title.trim(),
             type,
             categoryId,
             note: note ? note.trim() : null,
             userId: currentUser?.id!,
-            date: date.trim()
+            date: date.trim(),
+            image
         }
     })
 

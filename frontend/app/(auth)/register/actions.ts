@@ -34,7 +34,7 @@ export async function registerUser(prevState: RegisterFormState,formData: FormDa
     const validatedFields = RegisterSchema.safeParse(rawData)
 
     if(!validatedFields.success){
-        console.log("Validation failed:: ",validatedFields)
+        
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             success: false,
@@ -42,9 +42,6 @@ export async function registerUser(prevState: RegisterFormState,formData: FormDa
             message: "Please fix the errors in the form.",
         };
     }
-
-    console.log('Raw:: ', rawData)
-    console.log('Validation Success:: ', validatedFields)
 
     const registerInfo = await registerUserApi(validatedFields.data)
 

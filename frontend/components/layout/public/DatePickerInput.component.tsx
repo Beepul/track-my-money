@@ -36,6 +36,8 @@ const DatePickerInput = () => {
   const [month, setMonth] = useState<Date | undefined>(date)
   const [value, setValue] = useState(formatDate(date))
 
+
+
   return (
     <div className='w-full space-y-2'>
       <Label htmlFor='date' className='px-1 text-[16px] text-t2m-text-secondary font-normal'>
@@ -64,6 +66,11 @@ const DatePickerInput = () => {
               setOpen(true)
             }
           }}
+        />
+        <input
+          type="hidden"
+          name="date"
+          value={date ? date.toISOString().split("T")[0] : ""}
         />
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

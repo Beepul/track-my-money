@@ -8,6 +8,7 @@ import GoogleIcon from "@/public/google-icon.svg"
 import Image from "next/image";
 import { useActionState } from "react";
 import { signIn, SignInFormState } from "./actions";
+import { redirect } from "next/navigation";
 
 const initialState:SignInFormState = {
     success: false,
@@ -21,7 +22,8 @@ const initialState:SignInFormState = {
 
 
 export default function SignInPage () {
-     const [state, action] = useActionState(signIn, initialState);
+     const [state, action, pending] = useActionState(signIn, initialState);
+     if(state.success) redirect('/dashboard')
     return (
         <div className="shadow-lg p-8 rounded-2xl text-center text-sm min-w-3/5 md:min-w-1/2 lg:min-w-2/3 2xl:min-w-2/5">
             <h4 className="font-bold text-3xl text-t2m-text-primary mb-3">Welcome Back</h4>
@@ -53,7 +55,7 @@ export default function SignInPage () {
                         <p className="text-red-500 text-xs mt-1 text-center">{state.message}</p>
                     </div>
                 )}
-                <Button className="w-full bg-t2m-primary cursor-pointer hover:bg-teal-700 duration-300">Sign In</Button>
+                <Button className="w-full bg-t2m-primary cursor-pointer hover:bg-teal-700 duration-300 disabled:bg-teal-600" disabled={pending}>Sign In</Button>
                 <span className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 bg-white px-2 text-center text-xs md:text-sm">Or continue with</span>
             </form>
             <Button className="mb-8 w-full" size={"lg"}><Image src={GoogleIcon} alt="G" height={16} width={16} /> Sign in with Google</Button>

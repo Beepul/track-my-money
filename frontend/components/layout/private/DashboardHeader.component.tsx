@@ -8,6 +8,7 @@ import Link from "next/link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/dashboard/actions";
 
 
 export default function DashboardHeader() {
@@ -62,10 +63,10 @@ export default function DashboardHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={'#'} className="cursor-point">
+                <button className="cursor-pointer w-full active:bg-gray-300" onClick={logout}>
                   <LogOut />
                   Logout
-                </Link>
+                </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
