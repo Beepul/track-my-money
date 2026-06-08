@@ -1,4 +1,4 @@
-import TransactionForm from "@/components/layout/private/TransactionForm.component";
+import TransactionForm from "@/components/layout/private/transaction/TransactionForm.component";
 import { getAllCategoryApi } from "../../category/api";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";

@@ -1,4 +1,4 @@
-import CategoryForm from "@/components/layout/private/CategoryForm.component";
+import CategoryForm from "@/components/layout/private/category/CategoryForm.component";
 import Link from "next/link";
 import { getIconListApi } from "../api";
 import { ArrowLeft } from "lucide-react";

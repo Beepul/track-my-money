@@ -61,8 +61,27 @@ export async function AddTransactionApi(payload: AddTransactionPayload): Promise
 
 
 
-export async function GetAllTransaction(){
-    const res = await apiFetch(`${API_BASE_URL}/transaction`)
+export async function GetAllTransactionApi({page=1, limit=2, search, type, categoryId, fdate,tdate}: {page: number, limit: number, search?: string, type?: string, categoryId?: string, fdate?: string, tdate?: string}){
+    const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+    })
+    if(search) {
+        params.append('t', search)
+    }
+    if(type){
+        params.append('ty', type)
+    }
+    if(categoryId){
+        params.append('c', categoryId)
+    }
+    if(fdate && tdate){
+        params.append('fd', fdate)
+        params.append('td', tdate)
+    }
+    console.log("REQ::", `${API_BASE_URL}/transaction?${params.toString()}`)
+   
+    const res = await apiFetch(`${API_BASE_URL}/transaction?${params.toString()}`)
     const data = await res.json()
 
     if(!res.ok) {
@@ -79,3 +98,5 @@ export async function GetAllTransaction(){
         meta: data.meta
     }
 }
+
+

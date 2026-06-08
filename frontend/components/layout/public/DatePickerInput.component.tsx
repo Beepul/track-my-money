@@ -30,24 +30,30 @@ function isValidDate(date: Date | undefined) {
   return !isNaN(date.getTime())
 }
 
-const DatePickerInput = () => {
+type DatePickerProps = {
+  label: string,
+  id: string,
+  name: string
+}
+
+const DatePickerInput = ({label,id, name}: DatePickerProps) => {
   const [open, setOpen] = useState(false)
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const [month, setMonth] = useState<Date | undefined>(date)
-  const [value, setValue] = useState(formatDate(date))
+  const [date, setDate] = useState<Date | undefined>(undefined)
+  const [month, setMonth] = useState<Date | undefined>(new Date())
+  const [value, setValue] = useState("")
 
 
 
   return (
     <div className='w-full space-y-2'>
-      <Label htmlFor='date' className='px-1 text-[16px] text-t2m-text-secondary font-normal'>
-        Date
+      <Label htmlFor={id} className='px-1 text-[16px] text-t2m-text-secondary font-normal'>
+        {label}
       </Label>
       <div className='relative flex gap-2'>
         <Input
-          id='date'
+          id={id}
           value={value}
-          placeholder='January 01, 2025'
+          placeholder='mm/dd/yyyy'
           className='bg-background pr-10 py-6'
           readOnly
           onChange={e => {
@@ -69,7 +75,7 @@ const DatePickerInput = () => {
         />
         <input
           type="hidden"
-          name="date"
+          name={name}
           value={date ? date.toISOString().split("T")[0] : ""}
         />
         <Popover open={open} onOpenChange={setOpen}>

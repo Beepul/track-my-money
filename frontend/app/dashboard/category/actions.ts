@@ -9,6 +9,12 @@ const CategorySchema = z.object({
   icon: z.string().min(1, "Select one icon")
 });
 
+export type Category = {
+  name: string,
+  id: string, 
+  icon: string
+}
+
 export type CategoryFormState = {
   errors?: {
     name?: string[];

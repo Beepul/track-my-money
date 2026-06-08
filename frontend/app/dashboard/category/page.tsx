@@ -10,7 +10,7 @@ import {
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { getAllCategoryApi } from "./api";
-import CategoryTable from "@/components/layout/private/CategoryTable.component";
+import CategoryTable from "@/components/layout/private/category/CategoryTable.component";
 
 export default async function CategoryPage() {
     const res = await getAllCategoryApi()

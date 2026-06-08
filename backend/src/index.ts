@@ -6,6 +6,7 @@ import { errorHandler } from './middlewares/error.middleware';
 import mainRouter from './routes'
 import path from 'path';
 import multer from 'multer';
+import prisma from './config/prisma.client';
 
 dotenv.config();
 
@@ -47,11 +48,28 @@ app.use((err: Error, _req: Request, res: Response, next: NextFunction): void => 
 
 app.use(errorHandler);
 
+async function startServer() {
+  try {
+    await prisma.$connect();
 
+    console.log("[DATABASE] Database connected successfully");
 
-app.listen(port, () => {
-    return console.log(`Server is running on http://localhost:${port}`);
-});
+    app.listen(port, () => {
+      console.log(`[SERVER] Server running on http://localhost:${port}`);
+    });
+
+  } catch (error) {
+    console.error("[DB ERR] Database connection failed");
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// app.listen(port, () => {
+//     return console.log(`Server is running on http://localhost:${port}`);
+// });
 
 
 

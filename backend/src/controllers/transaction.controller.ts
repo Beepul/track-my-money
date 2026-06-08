@@ -56,17 +56,30 @@ const getAllTransaction = catchAsync(async (req: Request, res: Response, next: N
 
     if (ty) filters.type = ty;
     if (c) filters.category = {
-        name: c
+        id: c
     };
     if (fd && td) {
+        const fromDate = new Date(fd as string);
+        const toDate = new Date(td as string);
+        toDate.setHours(23, 59, 59, 999);
+
         filters.date = {
-            gte: new Date(fd as string),
-            lte: new Date(td as string),
+            gte: fromDate,
+            lte: toDate,
         };
     } else if (fd) {
-        filters.date = { gte: new Date(fd as string) };
+        const fromDate = new Date(fd as string);
+
+        filters.date = {
+            gte: fromDate,
+        };
     } else if (td) {
-        filters.date = { lte: new Date(td as string) };
+        const toDate = new Date(td as string);
+        toDate.setHours(23, 59, 59, 999);
+
+        filters.date = {
+            lte: toDate,
+        };
     }
 
     if(t){
@@ -85,7 +98,12 @@ const getAllTransaction = catchAsync(async (req: Request, res: Response, next: N
             date: "desc"
         },
         skip: (pageNum - 1) * limitNum,
-        take: limitNum
+        take: limitNum,
+        include: {
+            category: {
+                select: {id: true,name: true, icon: true}
+            }
+        }
     })
     
     const totalCount = await prisma.transaction.count({

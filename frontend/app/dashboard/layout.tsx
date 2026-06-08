@@ -1,6 +1,6 @@
-import DashboardFooter from "@/components/layout/private/DashboardFooter.component"
-import DashboardHeader from "@/components/layout/private/DashboardHeader.component"
-import DashboardSideBar from "@/components/layout/private/DashboardSideBar.component"
+import DashboardFooter from "@/components/layout/private/dashboard/DashboardFooter.component"
+import DashboardHeader from "@/components/layout/private/dashboard/DashboardHeader.component"
+import DashboardSideBar from "@/components/layout/private/dashboard/DashboardSideBar.component"
 
 export default function DashboardLayout({children}: {
     children: React.ReactNode

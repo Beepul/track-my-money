@@ -93,7 +93,7 @@ export default function TransactionForm({categoryList}: TransactionFormProps) {
                             <p className="text-red-500 text-xs mt-1">{state.errors.amount[0]}</p>
                         )}
                     </Field>
-                    <DatePickerInput />
+                    <DatePickerInput label="Date" id="date" name="date" />
                     {state.errors?.date && (
                             <p className="text-red-500 text-xs mt-1">{state.errors.date[0]}</p>
                     )}
@@ -101,7 +101,7 @@ export default function TransactionForm({categoryList}: TransactionFormProps) {
                         <FieldLabel htmlFor="category">Category</FieldLabel>
                         <input type="hidden" name="categoryId" value={selectedCategory} />
 
-                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <Select value={selectedCategory} onValueChange={(value: string) => setSelectedCategory(value)}>
                             <SelectTrigger id="categoryId" className="w-full py-6">
                                 <SelectValue placeholder="Select a category" />
                             </SelectTrigger>

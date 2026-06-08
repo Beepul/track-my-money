@@ -1,4 +1,4 @@
-import CategoryForm from "@/components/layout/private/CategoryForm.component";
+import CategoryForm from "@/components/layout/private/category/CategoryForm.component";
 import { getCategoryByIdApi, getIconListApi } from "../../api"
 
 export default async function EditCategoryPage({params}: {params: Promise<{ id: string }>}){
