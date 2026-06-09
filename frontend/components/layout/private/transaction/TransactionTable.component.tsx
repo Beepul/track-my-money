@@ -18,7 +18,9 @@ import React, { useState, useTransition } from "react";
 import { Label } from "@/components/ui/label";
 import DatePickerInput from "../../public/DatePickerInput.component";
 import TransactionTblFilter from "./TransactionTblFilter.component";
-import { Transaction } from "@/app/dashboard/transaction/actions";
+import { deleteTransactionAction, Transaction } from "@/app/dashboard/transaction/actions";
+import DeleteTransactionDialog from "./DeleteTransactionDialog.component";
+import { DeleteTransactionApi } from "@/app/dashboard/transaction/api";
 
 
 
@@ -49,6 +51,7 @@ function formatDate(date: string) {
 export default function TransactionTable({ transactionData, meta, searchPrams }: TransactionTableProps) {
     const [isSearching, startSearchTransition] = useTransition();
     const [search, setSearch] = useState(searchPrams);
+    const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
     const router = useRouter();
     const changeLimit = (value: string) => {
         router.push(`/dashboard/transaction?page=1&limit=${value}&search=${search}`);
@@ -60,6 +63,15 @@ export default function TransactionTable({ transactionData, meta, searchPrams }:
                 `/dashboard/transaction?page=1&limit=${meta.limit}&search=${search}`
             );
         });
+    }
+    const handleDeleteTransaction = async (id: string) => {
+        setDeleteLoadingId(id);
+
+        const res = await deleteTransactionAction(id);
+
+        alert(res.message);
+
+        setDeleteLoadingId(null);
     }
     return (
         <div className="rounded-md border overflow-hidden">
@@ -156,8 +168,10 @@ export default function TransactionTable({ transactionData, meta, searchPrams }:
 
                                 <TableCell>
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="outline" size="sm">
-                                            <Eye size={14} />
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link href={`transaction/${transaction.id}`}>
+                                                <Eye size={14} />
+                                            </Link>
                                         </Button>
 
                                         <Button variant="outline" size="sm">
@@ -165,10 +179,15 @@ export default function TransactionTable({ transactionData, meta, searchPrams }:
                                             Edit
                                         </Button>
 
-                                        <Button variant="destructive" size="sm">
+                                        {/* <Button variant="destructive" size="sm" onClick={()=>handleDeleteTransaction(transaction.id)}>
                                             <Trash2 size={14} />
                                             Delete
-                                        </Button>
+                                        </Button> */}
+                                        <DeleteTransactionDialog
+                                            title={transaction.title}
+                                            pending={deleteLoadingId === transaction.id}
+                                            onDelete={() => handleDeleteTransaction(transaction.id)}
+                                        />
                                     </div>
                                 </TableCell>
                             </TableRow>

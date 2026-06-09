@@ -1,6 +1,6 @@
 "use server"
 import { AddTransactionSchema } from "@/lib/zod.definitions";
-import { AddTransactionApi } from "./api";
+import { AddTransactionApi, DeleteTransactionApi } from "./api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -95,18 +95,6 @@ type FilterState = {
   message?: string;
 };
 
-// type FilterReturnType = {
-//     success?: boolean;
-//     message?: string;
-//     data?: Transaction[],
-//     errors?: {
-//         type?: string[];
-//         categoryId?: string[];
-//         fdate?: string[];
-//         tdate?: string[];
-//     } 
-// }
-
 export async function applyFilterActions (prevState: FilterState,formData: FormData): Promise<FilterState>  {
 
     const filters = {
@@ -115,7 +103,6 @@ export async function applyFilterActions (prevState: FilterState,formData: FormD
         fdate: String(formData.get("fdate") || ""),
         tdate: String(formData.get("tdate") || ""),
     };
-    // console.log("Filter::::", filters)
 
     const cookieStore = await cookies();
 
@@ -136,4 +123,11 @@ export async function resetFilterActions() {
     }
     revalidatePath("/dashboard/transaction")
     redirect("/dashboard/transaction?page=1&limit=5");
+}
+
+export async function deleteTransactionAction(id:string) {
+    const data = await DeleteTransactionApi(id)
+    if(!data.success) return data  
+    revalidatePath("/dashboard/transaction")
+    return data
 }

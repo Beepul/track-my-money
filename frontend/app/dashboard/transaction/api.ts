@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/config/api.config";
 import { apiFetch } from "@/lib/apiFetch";
+import { Transaction } from "./actions";
 
 export type AddTransactionPayload = {
     title: string;
@@ -79,7 +80,7 @@ export async function GetAllTransactionApi({page=1, limit=2, search, type, categ
         params.append('fd', fdate)
         params.append('td', tdate)
     }
-    console.log("REQ::", `${API_BASE_URL}/transaction?${params.toString()}`)
+    
    
     const res = await apiFetch(`${API_BASE_URL}/transaction?${params.toString()}`)
     const data = await res.json()
@@ -100,3 +101,42 @@ export async function GetAllTransactionApi({page=1, limit=2, search, type, categ
 }
 
 
+export async function DeleteTransactionApi(id: string){
+    const res = await apiFetch(`${API_BASE_URL}/transaction/${id.toString()}`, {
+        method: 'DELETE'
+    })
+
+    const data = await res.json()
+
+    if(!res.ok) {
+        return {
+            success: false,
+            message: data.message || "Failed to delete transaction"
+        }
+    }
+
+    return {
+        success: true,
+        message: data.message
+    }
+}
+
+export async function GetTransactionByIdApi(id:string): Promise<{success: boolean, message: string, data?: Transaction}> {
+    const res = await apiFetch(`${API_BASE_URL}/transaction/${id.toString()}`)
+
+
+    const data = await res.json()
+
+    if(!res.ok) {
+        return {
+            success: false,
+            message: data.message || "Failed to delete transaction"
+        }
+    }
+
+    return {
+        success: true,
+        message: data.message,
+        data: data.result
+    }
+}

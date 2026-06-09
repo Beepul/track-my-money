@@ -17,6 +17,8 @@ export async function apiFetch(url:string, options: RequestInit = {}) {
         headers["Content-Type"] = "application/json";
     }
 
+    console.log("REQ::", url)
+
     const res = await fetch(url, {
         ...options,
         headers,
