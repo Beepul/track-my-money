@@ -16,7 +16,7 @@ router.post(
 router.get('/', isAuthenticated, getAllTransaction)
 router.delete('/:id', isAuthenticated, deleteTransaction)
 router.get('/:id', isAuthenticated, getTransactionById)
-router.put('/:id', isAuthenticated, validateBody(editTransactionSchema), editTransaction)
+router.put('/:id', isAuthenticated, uploadTransaction.single("receipt"), validateBody(editTransactionSchema), editTransaction)
 
 
 export default router

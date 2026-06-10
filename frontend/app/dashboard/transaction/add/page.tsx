@@ -19,7 +19,7 @@ export default async function AddTransactionPage ( ) {
                 </div>
                 <p className="mb-5">Add your income or expense details below</p>
                 <>
-                    <TransactionForm categoryList={categoryList.data} />
+                    <TransactionForm categoryList={categoryList.data} mode="create"/>
                 </>
             </div>
         </main>

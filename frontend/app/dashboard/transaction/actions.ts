@@ -1,6 +1,6 @@
 "use server"
 import { AddTransactionSchema } from "@/lib/zod.definitions";
-import { AddTransactionApi, DeleteTransactionApi } from "./api";
+import { AddTransactionApi, DeleteTransactionApi, UpdateTransactionApi } from "./api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -130,4 +130,42 @@ export async function deleteTransactionAction(id:string) {
     if(!data.success) return data  
     revalidatePath("/dashboard/transaction")
     return data
+}
+
+export async function updateTransaction(id: string, prevState: AddTransactionFormState, formData: FormData): Promise<AddTransactionFormState> {
+    const rawData = {
+        title: String(formData.get("title") ?? ""),
+        amount: Number(formData.get("amount") ?? 0),
+        note: String(formData.get("note") ?? ""),
+        type: formData.get("type") as "INCOME" | "EXPENSE",
+        categoryId: String(formData.get("categoryId") ?? ""),
+        date: String(formData.get("date") ?? ""),
+        image: formData.get("image") as Blob | null,
+    }
+
+    const validateFields = AddTransactionSchema.safeParse(rawData)
+    
+
+    if(!validateFields.success){
+        return {
+            errors: validateFields.error.flatten().fieldErrors,
+            success: false,
+            data: rawData,
+            message: "Please fix the errors in the form.",
+        }
+    }
+
+    const transactionRes = await UpdateTransactionApi(validateFields.data, id)
+
+    if( !transactionRes.success){
+      return {
+        errors: {},
+        success: false,
+        // data: {},
+        message: transactionRes.message
+      }
+    }
+
+    revalidatePath("/dashboard/transaction")
+    redirect(`/dashboard/transaction/${id}`)
 }

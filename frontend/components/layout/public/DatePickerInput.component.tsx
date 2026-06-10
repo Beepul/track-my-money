@@ -22,6 +22,24 @@ function formatDate(date: Date | undefined) {
   })
 }
 
+function formatDateForInput(date: Date | undefined) {
+  if (!date) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateOnly(dateString?: string) {
+  if (!dateString) return undefined;
+
+  const [year, month, day] = dateString.split("T")[0].split("-").map(Number);
+
+  return new Date(year, month - 1, day);
+}
+
 function isValidDate(date: Date | undefined) {
   if (!date) {
     return false
@@ -33,14 +51,16 @@ function isValidDate(date: Date | undefined) {
 type DatePickerProps = {
   label: string,
   id: string,
-  name: string
+  name: string,
+  defaultDate?: string;
 }
 
-const DatePickerInput = ({label,id, name}: DatePickerProps) => {
+const DatePickerInput = ({label,id, name, defaultDate}: DatePickerProps) => {
+  const initialDate = parseDateOnly(defaultDate);
   const [open, setOpen] = useState(false)
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [month, setMonth] = useState<Date | undefined>(new Date())
-  const [value, setValue] = useState("")
+  const [date, setDate] = useState<Date | undefined>(initialDate)
+  const [month, setMonth] = useState<Date | undefined>(initialDate || new Date())
+  const [value, setValue] = useState(formatDate(initialDate))
 
 
 
@@ -76,7 +96,7 @@ const DatePickerInput = ({label,id, name}: DatePickerProps) => {
         <input
           type="hidden"
           name={name}
-          value={date ? date.toISOString().split("T")[0] : ""}
+          value={formatDateForInput(date)}
         />
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

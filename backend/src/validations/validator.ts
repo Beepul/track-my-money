@@ -7,6 +7,7 @@ export const validateBody = (schema: Joi.ObjectSchema<any>) => async (req: Reque
 
     try {
         const data = req.body
+        console.log(data)
 
         if (!data) {
             throw { message: "No data present inside body", status: 400 }

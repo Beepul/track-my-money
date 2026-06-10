@@ -228,9 +228,9 @@ const editTransaction = catchAsync(async (req: Request, res: Response, next: Nex
         },
         data: {
             title: title.trim(),
-            amount, 
+            amount: Number(amount), 
             type,
-            note: note ? note.trim() : null,
+            note: note ? note.trim() : transaction.note,
             categoryId: categoryId.trim(),
             date: date.trim()
         }

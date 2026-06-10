@@ -174,9 +174,11 @@ export default function TransactionTable({ transactionData, meta, searchPrams }:
                                             </Link>
                                         </Button>
 
-                                        <Button variant="outline" size="sm">
-                                            <Pencil size={14} />
-                                            Edit
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`transaction/edit/${transaction.id}`}>
+                                                <Pencil size={14} />
+                                                Edit
+                                            </Link>
                                         </Button>
 
                                         {/* <Button variant="destructive" size="sm" onClick={()=>handleDeleteTransaction(transaction.id)}>

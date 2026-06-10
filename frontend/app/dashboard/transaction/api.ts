@@ -56,7 +56,7 @@ export async function AddTransactionApi(payload: AddTransactionPayload): Promise
     }
     return {
         success: true,
-        message: ''
+        message: data.message || "Transaction created successfully"
     }
 }
 
@@ -138,5 +138,48 @@ export async function GetTransactionByIdApi(id:string): Promise<{success: boolea
         success: true,
         message: data.message,
         data: data.result
+    }
+}
+
+
+export async function UpdateTransactionApi(payload: AddTransactionPayload, id: string): Promise<AddTransactionReturn> {
+
+    const formData = new FormData();
+
+    formData.append("title", payload.title);
+    formData.append("amount", String(payload.amount));
+    formData.append("type", payload.type);
+    formData.append("categoryId", payload.categoryId);
+    formData.append("date", payload.date.toISOString());
+
+    if (payload.note) {
+        formData.append("note", payload.note);
+    }
+
+    if (payload.image && payload.image.size > 0) {
+        formData.append("receipt", payload.image);
+    }
+
+    console.log("Hereee::", formData)
+
+    const res = await apiFetch(`${API_BASE_URL}/transaction/${id}`, {
+        method: "PUT",
+        body: formData,
+        // cache: "no-store",
+    });
+
+    
+    const data = await res.json();
+    
+
+    if(!res.ok){
+        return {
+            success: false,
+            message: data.message || "Failed to update transaction",
+        };
+    }
+    return {
+        success: true,
+        message: data.message
     }
 }
