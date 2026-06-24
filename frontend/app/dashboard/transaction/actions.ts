@@ -29,7 +29,7 @@ export type AddTransactionFormState = {
         type?: "INCOME" | "EXPENSE";
         categoryId?: string;
         date?: string;
-        image: Blob | null
+        image?: Blob 
     },
     errors?: {
         title?: string[];
@@ -42,6 +42,9 @@ export type AddTransactionFormState = {
     } 
 }
 export async function addTransaction (prevState: AddTransactionFormState, formData: FormData): Promise<AddTransactionFormState> {
+
+    const image = formData.get("image") as Blob | null;
+
     const rawData = {
         title: String(formData.get("title") ?? ""),
         amount: Number(formData.get("amount") ?? 0),
@@ -49,12 +52,13 @@ export async function addTransaction (prevState: AddTransactionFormState, formDa
         type: formData.get("type") as "INCOME" | "EXPENSE",
         categoryId: String(formData.get("categoryId") ?? ""),
         date: String(formData.get("date") ?? ""),
-        image: formData.get("image") as Blob | null,
+        image: image && image.size > 0 ? image : undefined,
     }
 
-    
-
+    console.log("Raw", rawData)
     const validateFields = AddTransactionSchema.safeParse(rawData)
+
+    console.log("After validation", validateFields)
     
 
     if(!validateFields.success){
@@ -133,6 +137,8 @@ export async function deleteTransactionAction(id:string) {
 }
 
 export async function updateTransaction(id: string, prevState: AddTransactionFormState, formData: FormData): Promise<AddTransactionFormState> {
+    const image = formData.get("image") as Blob | null;
+
     const rawData = {
         title: String(formData.get("title") ?? ""),
         amount: Number(formData.get("amount") ?? 0),
@@ -140,7 +146,7 @@ export async function updateTransaction(id: string, prevState: AddTransactionFor
         type: formData.get("type") as "INCOME" | "EXPENSE",
         categoryId: String(formData.get("categoryId") ?? ""),
         date: String(formData.get("date") ?? ""),
-        image: formData.get("image") as Blob | null,
+        image:  image && image.size > 0 ? image : undefined,
     }
 
     const validateFields = AddTransactionSchema.safeParse(rawData)
@@ -167,5 +173,6 @@ export async function updateTransaction(id: string, prevState: AddTransactionFor
     }
 
     revalidatePath("/dashboard/transaction")
+    revalidatePath(`/dashboard/transaction/${id}`)
     redirect(`/dashboard/transaction/${id}`)
 }

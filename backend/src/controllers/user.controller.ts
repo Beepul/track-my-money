@@ -104,6 +104,22 @@ const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunct
 
 })
 
+const profileCtrl = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.userInfo
+    if(user) {
+        const {password, ...result } = user
+        res.status(200).json({
+            result: result,
+            message: "User profile"
+        })
+    }else{
+        throw {
+            message: 'Login to continue',
+            status: 401
+        }
+    }
+})
+
 
 const refreshTokenCtrl = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies?.T2M_JWT;
@@ -377,5 +393,6 @@ export {
     updatePassword,
     updateUserInfo,
     forgetPassword,
-    resetPassword
+    resetPassword,
+    profileCtrl
 }

@@ -145,5 +145,47 @@ body {
   * {
     @apply border-border outline-ring/50;}
   body {
-    @apply bg-background text-foreground;}}
+    @apply bg-background text-foreground;}
+}
 
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #report-print-area,
+  #report-print-area * {
+    visibility: visible;
+  }
+
+  #report-print-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 24px;
+  }
+
+  #report-print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #report-print-area th,
+  #report-print-area td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  #report-print-area th {
+    font-weight: bold;
+    background: #f3f4f6;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+}

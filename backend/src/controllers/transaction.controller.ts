@@ -187,6 +187,7 @@ const getTransactionById = catchAsync(async (req: Request, res: Response, next: 
 const editTransaction = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     const currentUser = req.userInfo
+    const image = req.file?.filename || null;
 
     const transaction = await prisma.transaction.findUnique({
         where: {
@@ -232,7 +233,8 @@ const editTransaction = catchAsync(async (req: Request, res: Response, next: Nex
             type,
             note: note ? note.trim() : transaction.note,
             categoryId: categoryId.trim(),
-            date: date.trim()
+            date: date.trim(),
+            image: image ? image : transaction.image
         }
     })
 

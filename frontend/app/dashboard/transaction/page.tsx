@@ -67,7 +67,7 @@ export default async function TransactionsPage ({searchParams}: TransactionsPage
                 transactionData={transactionRes.data} 
                 meta={transactionRes.meta} 
                 searchPrams={search || ""}
-                categoryList={categoryList.data}
+                // categoryList={categoryList.data}
                 />
         </div>
     )

@@ -7,13 +7,46 @@ import { MobileSideBar } from "./DashboardSideBar.component";
 import Link from "next/link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/dashboard/actions";
+import { useTransition } from "react";
+
+type User = {
+  id: string,
+  first_name: string,
+  last_name: string,
+  email: string,
+  password?: string,
+  image: string | null,
+  googleId?: string | null,
+  createdAt: string
+}
 
 
-export default function DashboardHeader() {
+export default function DashboardHeader({user}: {user: User}) {
+  const router = useRouter();
   const pathname = usePathname()
   const isDashboard = pathname.split('/').pop() == 'dashboard'
+
+  const searchParams = useSearchParams();
+  const [pending, startTransition] = useTransition();
+
+  const currentPeriod = searchParams.get("period") || "m";
+
+  const changePeriod = (value: string) => {
+    startTransition(() => {
+      router.push(`/dashboard?period=${value}`);
+    });
+  };
+
+
+  console.log(user)
+
+  const getProfilePlaceholder = () => {
+      const firstCharacter = user.first_name.split("")[0]
+      const secondCharacter = user.last_name.split("")[0]
+      return `${firstCharacter}${secondCharacter}`
+  }
 
   return (
     <header className="flex items-center border-b">
@@ -28,24 +61,34 @@ export default function DashboardHeader() {
       <div className="flex items-center justify-content-between flex-1 border-l p-6">
         {isDashboard &&
           <div>
-            <h2 className="text-t2m-text-primary lg:text-3xl text-xl mb-2">Welcome Back, <span>John!</span></h2>
+            <h2 className="text-t2m-text-primary lg:text-3xl text-xl mb-2">Welcome Back, <span className="capitalize">{user.first_name}!</span></h2>
             <p className="text-sm lg:text-base text-t2m-text-secondary">Here's what happening with your transactions</p>
           </div>
         }
         <div className="flex-1 lg:flex items-center justify-end gap-5 hidden">
           {
             isDashboard &&
-            <NativeSelect defaultValue={'weekly'}>
-              <NativeSelectOption value="weekly">Weekly</NativeSelectOption>
-              <NativeSelectOption value="monthly">Monthly</NativeSelectOption>
-              <NativeSelectOption value="yearly">Yearly</NativeSelectOption>
+            <NativeSelect 
+                value={currentPeriod}
+                onChange={(e) => changePeriod(e.target.value)}
+                disabled={pending}
+            >
+              <NativeSelectOption value="w">Weekly</NativeSelectOption>
+              <NativeSelectOption value="m">Monthly</NativeSelectOption>
+              <NativeSelectOption value="y">Yearly</NativeSelectOption>
             </NativeSelect>
           }
           <DropdownMenu>
             <DropdownMenuTrigger className="cursor-pointer">
               <div className="flex items-center gap-3">
-                <Image src={profile} alt="profile" className="rounded-full object-cover h-[30px] w-[30px]" />
-                <p>John Doe</p>
+                {
+                  user.image ? (
+                    <Image src={profile} alt="profile" className="rounded-full object-cover h-[30px] w-[30px]" />
+                  ): (
+                    <span className="uppercase flex items-center justify-center font-semibold rounded-full bg-amber-800 text-white h-[40px] w-[40px]" >{getProfilePlaceholder()}</span>
+                  )
+                }
+                <p className="capitalize">{user.first_name}{" "}{user.last_name}</p>
                 <ChevronDown size={18} />
               </div>
             </DropdownMenuTrigger>

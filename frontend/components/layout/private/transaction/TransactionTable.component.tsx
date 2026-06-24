@@ -32,12 +32,12 @@ type TransactionTableProps = {
         limit: number;
         totalPages: number;
     };
-    searchPrams: string;
-    categoryList: {
-        id: string,
-        name: string,
-        icon: string,
-    }[]
+    searchPrams?: string;
+    // categoryList: {
+    //     id: string,
+    //     name: string,
+    //     icon: string,
+    // }[]
 };
 
 function formatDate(date: string) {

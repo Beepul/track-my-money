@@ -18,6 +18,7 @@ const createUpload = (folder: "profile" | "transaction") => {
       },
 
       filename(req, file, callback) {
+        console.log(file)
         const ext = path.extname(file.originalname);
         const uniqueName =
           Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;

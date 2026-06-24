@@ -25,7 +25,7 @@ const initialState:AddTransactionFormState = {
         type: "INCOME",
         date: new Date().toISOString().split("T")[0],
         categoryId: "",
-        image: null
+        // image: null
     },
     errors: {}
 }
@@ -42,6 +42,7 @@ type TransactionFormProps = {
 
 
 export default function TransactionForm({categoryList, mode, transaction}: TransactionFormProps) {
+    const [imageError, setImageError] = useState("");
     const selectedAction = mode === "edit" && transaction?.id ? updateTransaction.bind(null, transaction?.id) : addTransaction
     const [state, action, pending] = useActionState(selectedAction, initialState);
     const [selectedCategory, setSelectedCategory] = useState(state.data?.categoryId || transaction?.categoryId || "")
@@ -141,7 +142,27 @@ export default function TransactionForm({categoryList, mode, transaction}: Trans
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="image">Image (Optional)</FieldLabel>
-                        <Input type="file" id="image" name="image"/>
+                        <Input
+                            type="file"
+                            id="image"
+                            name="image"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+
+                                if (file && file.size > 1024 * 1024) {
+                                    setImageError("Image must be less than 1MB");
+                                    e.target.value = "";
+                                    return;
+                                }
+
+                                setImageError("");
+                            }}
+                            />
+
+                            {imageError && (
+                                <p className="text-red-500 text-xs mt-1">{imageError}</p>
+                            )}
                     </Field>
                 </FieldGroup>
             </div>
