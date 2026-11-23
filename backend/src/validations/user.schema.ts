@@ -14,9 +14,14 @@ const loginUserSchema = Joi.object({
     password: Joi.string().min(3).required()
 })
 
-const updatePasswordSchema = Joi.object({
+const oldPasswordSchema = Joi.object({
     oldPassword: Joi.string().required(),
-    newPassword: Joi.string().pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/).required(),
+})
+
+const newPasswordSchema = Joi.object({
+    newPassword: Joi.string()
+        .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/)
+        .required(),
     confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
 })
 
@@ -38,7 +43,8 @@ const resetPasswordSchema = Joi.object({
 export {
     registerUserSchema,
     loginUserSchema,
-    updatePasswordSchema,
+    oldPasswordSchema,
+    newPasswordSchema,
     updateUserSchema,
     forgetPasswordSchema,
     resetPasswordSchema

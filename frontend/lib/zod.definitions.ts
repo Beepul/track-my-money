@@ -42,3 +42,17 @@ export const ReportFormSchema = z.object({
     path: ["to_date"],
   }
 )
+
+export const UpdateAccountSchema = z.object({
+    first_name: z.string(),
+    last_name: z.string()
+})
+
+export const UpdatePasswordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(4, 'Password must be at least 4 characters'),
+    confirmPassword: z.string().min(4, 'Please confirm your password')
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    path: ['confirmPassword'],
+    error: 'Confirm password does not match with new password'
+})

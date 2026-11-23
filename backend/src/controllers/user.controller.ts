@@ -6,6 +6,7 @@ import { generateAccessToken, generatePwdResetToken, generateRefreshToken, verif
 import path from "path"
 import fs from 'fs'
 import sendEmail from "../config/mailer.config"
+import { newPasswordSchema, oldPasswordSchema } from "../validations/user.schema"
 
 
 const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -185,16 +186,34 @@ const logOutUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 })
 
 const updatePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const {oldPassword, newPassword} = req.body
+    const {oldPassword, newPassword, confirmPassword} = req.body
 
     const currentUser = req.userInfo
-    
-    const isMatch = bcrypt.compareSync(currentUser?.password as string, oldPassword)
 
+    // step 1: validate oldPassword is present
+    const { error: oldPasswordError } = oldPasswordSchema.validate({ oldPassword })
+    if (oldPasswordError) {
+        throw {
+            message: oldPasswordError.details[0].message,
+            status: 400
+        }
+    }
+    
+    // step 2: check it actually matches
+    const isMatch = bcrypt.compareSync(oldPassword, currentUser?.password as string)
     if (!isMatch) {
         throw {
-            message: "Old password doesnot match",
+            message: "Old password does not match",
             status: 401
+        }
+    }
+
+    // step 3: only now validate new password rules
+    const { error: newPasswordError } = newPasswordSchema.validate({ newPassword, confirmPassword })
+    if (newPasswordError) {
+        throw {
+            message: newPasswordError.details[0].message,
+            status: 400
         }
     }
 

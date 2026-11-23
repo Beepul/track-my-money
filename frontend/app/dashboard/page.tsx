@@ -20,6 +20,7 @@ export default async function DashboardPage ({searchParams}: DashboardPageProps)
     })
 
     const dashboardData = await GetDashboardDataApi({period})
+    
     const dashboardCharts = await GetDashboardChartsApi({period})
 
     return (

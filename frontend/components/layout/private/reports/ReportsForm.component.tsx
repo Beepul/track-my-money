@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReplaceAll, Search } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
 
 type ReportsFormProps = {
@@ -36,13 +37,24 @@ export default function ReportsFormComponent ({categoryList, fromDate, toDate, c
     const [state, action, pending] = useActionState(getReportActions, initialState)
     const [selectedCat, setSelectedCat] = useState(category)
     const [selectedType, setSelectedType] = useState(type)
+    const [selectedFromDate, setSelectedFromDate] = useState(fromDate);
+    const [selectedToDate, setSelectedToDate] = useState(toDate);
+    const router = useRouter()
+
+    const resetFilter = () => {
+        setSelectedFromDate("");
+        setSelectedToDate("");
+        setSelectedCat("all");
+        setSelectedType("ALL");
+        router.replace("/dashboard/reports")
+    }
 
     return (
         <form action={action}>
             <FieldGroup className="flex-row">
                 <Field>
                     <FieldLabel htmlFor="from_date">From Date</FieldLabel>
-                    <Input id="from_date" name="from_date" type="date" defaultValue={fromDate}/>
+                    <Input id="from_date" name="from_date" type="date" value={selectedFromDate} onChange={(e) => setSelectedFromDate(e.target.value)}/>
                     {
                         state.errors?.from_date && (
                             <p className="text-red-500 text-xs mt-1">{state.errors.from_date[0]}</p>
@@ -51,7 +63,7 @@ export default function ReportsFormComponent ({categoryList, fromDate, toDate, c
                 </Field>
                 <Field>
                     <FieldLabel htmlFor="to_date">To Date</FieldLabel>
-                    <Input type="date" id="to_date" name="to_date" defaultValue={toDate}/>
+                    <Input type="date" id="to_date" name="to_date" value={selectedToDate} onChange={(e) => setSelectedToDate(e.target.value)}/>
                     {
                         state.errors?.to_date && (
                             <p className="text-red-500 text-xs mt-1">{state.errors.to_date[0]}</p>
@@ -119,7 +131,7 @@ export default function ReportsFormComponent ({categoryList, fromDate, toDate, c
                         )
                     }
                 </Field>
-                <div className="pt-7">
+                <div className="pt-7 flex items-center gap-4">
                     <Button type="submit" className="flex-1 bg-t2m-primary py-5 cursor-pointer hover:bg-t2m-primary hover:opacity-75 disabled:bg-teal-500" disabled={pending}>
                         <Search size={16} />
                         {
@@ -128,6 +140,7 @@ export default function ReportsFormComponent ({categoryList, fromDate, toDate, c
                             ) : "Generate Report"
                         }
                     </Button>
+                    <Button type="button" className="py-5 cursor-pointer hover:bg-gray-700 transition-all duration-500" onClick={resetFilter}>Reset Filter</Button>
                 </div>
             </FieldGroup>
         </form>

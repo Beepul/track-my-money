@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChartBar, House, PanelLeft, Plus, Settings, Tag, Tags } from 'lucide-react';
 import { usePathname } from "next/navigation";
+import SettingsSidebarMenu from "./SettingsSidebarMenu.component";
 
 export default function DashboardSideBar() {
     return (
@@ -48,12 +49,7 @@ const DashboardMenu = () => {
       title: "Reports",
       href: "/dashboard/reports",
       icon: ChartBar,
-    },
-    {
-      title: "Settings",
-      href: "/dashboard/settings",
-      icon: Settings,
-    },
+    }
   ];
   
     return (
@@ -77,6 +73,7 @@ const DashboardMenu = () => {
                     </li>
                 )
             })}
+            <SettingsSidebarMenu />
         </ul>
     )
 }

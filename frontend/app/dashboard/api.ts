@@ -2,6 +2,17 @@ import { API_BASE_URL } from "@/config/api.config"
 import { apiFetch } from "@/lib/apiFetch"
 import { cookies } from "next/headers"
 
+export type User = {
+  id: string,
+  first_name: string,
+  last_name: string,
+  email: string,
+  password?: string,
+  image: string | null,
+  googleId?: string | null,
+  createdAt: string
+}
+
 export const GetMyProfileApi = async () => {
     const res = await apiFetch(`${API_BASE_URL}/user/profile`)
     const data = await res.json() 

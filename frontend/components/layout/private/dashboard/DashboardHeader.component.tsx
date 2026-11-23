@@ -2,7 +2,7 @@
 import Image from "next/image";
 import profile from "@/public/images/profile-1.jpg"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronDown, CircleUserRound, Kanban, LockKeyhole, LogOut } from "lucide-react";
+import { ChevronDown, CircleUserRound, Kanban, LockKeyhole, LogOut, Moon, Sun } from "lucide-react";
 import { MobileSideBar } from "./DashboardSideBar.component";
 import Link from "next/link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -10,17 +10,11 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/dashboard/actions";
 import { useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import ThemeToggler from "../ui/ThemeToggler.component";
+import { User } from "@/app/dashboard/api";
 
-type User = {
-  id: string,
-  first_name: string,
-  last_name: string,
-  email: string,
-  password?: string,
-  image: string | null,
-  googleId?: string | null,
-  createdAt: string
-}
+
 
 
 export default function DashboardHeader({user}: {user: User}) {
@@ -66,6 +60,7 @@ export default function DashboardHeader({user}: {user: User}) {
           </div>
         }
         <div className="flex-1 lg:flex items-center justify-end gap-5 hidden">
+          <ThemeToggler />
           {
             isDashboard &&
             <NativeSelect 
@@ -93,18 +88,6 @@ export default function DashboardHeader({user}: {user: User}) {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem asChild>
-                <Link href={'#'} className="cursor-pointer">
-                  <CircleUserRound />
-                  Profile  
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={'#'} className="cursor-point">
-                  <LockKeyhole /> 
-                  Change Password
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <button className="cursor-pointer w-full active:bg-gray-300" onClick={logout}>
                   <LogOut />

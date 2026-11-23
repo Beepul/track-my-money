@@ -2,6 +2,9 @@ import DashboardFooter from "@/components/layout/private/dashboard/DashboardFoot
 import DashboardHeader from "@/components/layout/private/dashboard/DashboardHeader.component"
 import DashboardSideBar from "@/components/layout/private/dashboard/DashboardSideBar.component"
 import { GetMyProfileApi } from "./api"
+import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 
 export default async function DashboardLayout({children}: {
@@ -24,6 +27,10 @@ export default async function DashboardLayout({children}: {
                     {children}
                 </main>
             </div>
+            <div className="fixed bottom-10 right-10">
+                <Link href={"/dashboard/transaction/add"} className="w-16 h-16 bg-t2m-primary cursor-pointer rounded-full flex items-center justify-center hover:bg-teal-600"><Plus size={26} className="text-white" /></Link>
+            </div>
+            <DashboardFooter />
         </div>
     )
 }
