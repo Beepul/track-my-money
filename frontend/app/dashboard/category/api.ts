@@ -39,6 +39,7 @@ export async function getIconListApi(){
     const res = await apiFetch(`${API_BASE_URL}/category/icon-list`);
     const data = await res.json();
 
+
     if(!res.ok){
         return {
             success: false,

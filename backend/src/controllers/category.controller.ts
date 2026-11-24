@@ -70,43 +70,64 @@ const getAllCategory = catchAsync(async (req: Request, res: Response, next: Next
     })
 })
 
-const deleteCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const currentUser = req.userInfo
 
-    const {id} = req.params
+const deleteCategory = catchAsync(async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const currentUser = req.userInfo;
+    const { id } = req.params;
 
     const category = await prisma.category.findUnique({
         where: {
             id
         }
-    })
+    });
 
-    if(!category){
+    if (!category) {
         throw {
-            message: 'Category with provided id doesnot exist',
-            status: 400
-        }
+            message: "Category does not exist.",
+            status: 404
+        };
     }
 
-    if(category?.userId !== currentUser?.id){
+    if (category.userId !== currentUser?.id) {
         throw {
-            message: "You can only delete categories that you have created",
-            status: 400
+            message: "You can only delete categories that you have created.",
+            status: 403
+        };
+    }
+
+    // Check whether the category is used by any transactions
+    const transactionCount = await prisma.transaction.count({
+        where: {
+            categoryId: id,
+            userId: currentUser.id
         }
+    });
+
+    if (transactionCount > 0) {
+        throw {
+            message: `Cannot delete this category because it is being used by ${transactionCount} transaction${transactionCount > 1 ? "s" : ""}. Please move or delete those transactions first.`,
+            status: 409
+        };
     }
 
     await prisma.category.delete({
         where: {
             id
         }
-    })
+    });
 
     res.status(200).json({
-        result: null, 
-        message: 'Category deleted successfully',
+        result: null,
+        message: "Category deleted successfully",
         meta: null
-    })
-})
+    });
+});
+
+
 
 const editCategory = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const currentUser = req.userInfo

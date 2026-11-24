@@ -1,4 +1,6 @@
-"use client"
+
+"use client";
+
 import { deleteCategoryAction } from "@/app/dashboard/category/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,9 +11,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
+import DeleteCategoryDialog from "./DeleteCategoryDialog.component";
 
 type Category = {
     id: string;
@@ -38,63 +42,111 @@ export default function CategoryTable({ data }: CategoryTableProps) {
     const deleteCat = async (id: string) => {
         setDeleteLoadingId(id);
 
-        const res = await deleteCategoryAction(id);
+        try {
+            const res = await deleteCategoryAction(id);
 
-        alert(res.message);
+            if (!res.success) {
+                toast.error(res.message || "Failed to delete category");
+                throw new Error(res.message || "Failed to delete category");
+            }
 
-        setDeleteLoadingId(null);
+            toast.success(res.message || "Category deleted successfully");
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                toast.error("Failed to delete category");
+            }
+
+            throw error;
+        } finally {
+            setDeleteLoadingId(null);
+        }
     };
+
     return (
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-md border border-border bg-card text-card-foreground overflow-hidden">
             <Table>
-                <TableHeader className="bg-gray-50">
+                <TableHeader className="bg-muted/50">
                     <TableRow className="hover:bg-transparent">
-                        <TableHead className="font-semibold">Icon</TableHead>
-                        <TableHead className="font-semibold">Name</TableHead>
-                        <TableHead className="font-semibold">Created At</TableHead>
-                        <TableHead className="w-[160px] text-right font-semibold">
+                        <TableHead className="font-semibold text-foreground">
+                            Icon
+                        </TableHead>
+                        <TableHead className="font-semibold text-foreground">
+                            Name
+                        </TableHead>
+                        <TableHead className="font-semibold text-foreground">
+                            Created At
+                        </TableHead>
+                        <TableHead className="w-[160px] text-right font-semibold text-foreground">
                             Actions
                         </TableHead>
                     </TableRow>
                 </TableHeader>
 
                 <TableBody>
-                        {data.map((cat, index) => (
-                            <TableRow key={cat.id}>
+                    {data.length === 0 ? (
+                        <TableRow className="hover:bg-transparent">
+                            <TableCell
+                                colSpan={4}
+                                className="py-12 text-center"
+                            >
+                                <p className="font-medium text-foreground">
+                                    No categories found
+                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Add a category to start organising your transactions.
+                                </p>
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        data.map((cat) => (
+                            <TableRow
+                                key={cat.id}
+                                className="border-border hover:bg-accent/40 transition-colors"
+                            >
                                 <TableCell>
-                                    <div className="h-9 w-9 rounded-md border bg-gray-50 flex items-center justify-center">
+                                    <div className="h-9 w-9 rounded-md border border-border bg-muted/30 flex items-center justify-center">
                                         <img
                                             src={`http://localhost:5000/api/v1/uploads/catIcons/${cat.icon}`}
-                                            alt="Food"
-                                            className="h-5 w-5"
+                                            alt={cat.name}
+                                            className="h-5 w-5 object-contain"
                                         />
                                     </div>
                                 </TableCell>
-                                <TableCell className="font-medium capitalize">{cat.name}</TableCell>
-                                <TableCell className="font-medium">{formatDate(cat.createdAt)}</TableCell>
+
+                                <TableCell className="font-medium capitalize text-foreground">
+                                    {cat.name}
+                                </TableCell>
+
+                                <TableCell className="text-t2m-text-secondary">
+                                    {formatDate(cat.createdAt)}
+                                </TableCell>
+
                                 <TableCell>
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="outline" size="sm" className="cursor-pointer">
-                                            <Link href={`/dashboard/category/edit/${cat.id}`} className="flex items-center gap-2">
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm"
+                                            className="cursor-pointer border-border text-foreground hover:bg-accent hover:text-accent-foreground"
+                                        >
+                                            <Link
+                                                href={`/dashboard/category/edit/${cat.id}`}
+                                            >
                                                 <Pencil size={14} />
                                                 Edit
                                             </Link>
                                         </Button>
 
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            className="disabled:bg-red-400 cursor-pointer hover:bg-red-500"
-                                            disabled={deleteLoadingId === cat.id}
-                                            onClick={() => deleteCat(cat.id)}
-                                            >
-                                            <Trash2 size={14} />
-                                            {deleteLoadingId === cat.id ? "Deleting..." : "Delete"}
-                                        </Button>
+                                        <DeleteCategoryDialog
+                                            title={cat.name}
+                                            pending={deleteLoadingId === cat.id}
+                                            onDelete={() => deleteCat(cat.id)}
+                                        />
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ))
+                    )}
                 </TableBody>
             </Table>
         </div>

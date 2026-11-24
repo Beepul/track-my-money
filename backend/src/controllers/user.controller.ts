@@ -81,28 +81,17 @@ const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunct
 
     const accessToken = generateAccessToken(user.id)
     const refreshToken = generateRefreshToken(user.id)
-
-    res.cookie('T2M_JWT', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
-        sameSite: 'strict',
-        path: '/api/v1/user/', // limit exposure
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
     const { password: _pw, ...resultUser } = user;
 
     res.status(200).json({
-        message: 'Login successful',
+        message: "Login successful",
         result: {
             ...resultUser,
-            accessToken
+            accessToken,
+            refreshToken,
         },
-        meta: null
-    })
-
-
-
+        meta: null,
+    });
 })
 
 const profileCtrl = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -122,68 +111,71 @@ const profileCtrl = catchAsync(async (req: Request, res: Response, next: NextFun
 })
 
 
-const refreshTokenCtrl = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken = req.cookies?.T2M_JWT;
+const refreshTokenCtrl = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const authorization = req.headers.authorization;
 
-    if (!refreshToken) {
-        throw {
-            message: 'Refresh token not found in cookie',
-            status: 401
+        if (
+            !authorization ||
+            !authorization.startsWith("Bearer ")
+        ) {
+            throw {
+                message: "Refresh token is required",
+                status: 401,
+            };
         }
-    }
 
-    try {
-        const decoded = verifyRefreshToken(refreshToken) as { userId: string }
+        const refreshToken = authorization.slice(7);
+
+        let decoded: { userId: string };
+
+        try {
+            decoded = verifyRefreshToken(refreshToken) as {
+                userId: string;
+            };
+        } catch {
+            throw {
+                message: "Invalid or expired refresh token",
+                status: 401,
+            };
+        }
+
+        if (!decoded.userId) {
+            throw {
+                message: "Invalid refresh token payload",
+                status: 401,
+            };
+        }
 
         const user = await prisma.user.findUnique({
             where: {
-                id: decoded.userId
-            }
-        })
+                id: decoded.userId,
+            },
+        });
 
-        if(!user){
+        if (!user) {
             throw {
-                message: 'User not found',
-                status: 404
-            }
+                message: "Invalid refresh session",
+                status: 401,
+            };
         }
 
         const accessToken = generateAccessToken(user.id);
 
-        res.status(200).json({
+        return res.status(200).json({
             result: {
                 accessToken,
             },
-            message: 'Successfully created new access token',
-            meta: null
-        })
-        
-    } catch (error) {
-        throw {
-            message: 'Invalid or expired refresh token',
-            status: 401
-        }
+            message: "Successfully created new access token",
+            meta: null,
+        });
     }
-})
+);
 
-const logOutUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const cookies = req.cookies
-    
-    if(!cookies || !cookies?.T2M_JWT){
-        throw {
-            message: 'No cookie found',
-            status: 204
-        }
-    }
-
-    res.clearCookie('T2M_JWT')
-
-    res.status(200).json({
-        result: null,
-        message: 'User logged out successfully',
-        meta: null 
-    })
-})
 
 const updatePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const {oldPassword, newPassword, confirmPassword} = req.body
@@ -204,7 +196,7 @@ const updatePassword = catchAsync(async (req: Request, res: Response, next: Next
     if (!isMatch) {
         throw {
             message: "Old password does not match",
-            status: 401
+            status: 400
         }
     }
 
@@ -407,7 +399,6 @@ const resetPassword = catchAsync( async (req: Request, res: Response, next: Next
 export {
     registerUser,
     loginUser,
-    logOutUser,
     refreshTokenCtrl,
     updatePassword,
     updateUserInfo,

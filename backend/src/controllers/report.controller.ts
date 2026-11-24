@@ -2,15 +2,28 @@ import { NextFunction, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import prisma from "../config/prisma.client";
 
-const getReportData = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const {fromDate, toDate, category, type, page=1, limit=2} = req.query
-    const currentUser = req.userInfo
 
-    if(!fromDate || !toDate){
+const getReportData = catchAsync(async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const {
+        fromDate,
+        toDate,
+        category,
+        type,
+        page = 1,
+        limit = 2
+    } = req.query;
+
+    const currentUser = req.userInfo;
+
+    if (!fromDate || !toDate) {
         throw {
             message: "Please provide valid dates",
             status: 400
-        }
+        };
     }
 
     const startDate = new Date(fromDate as string);
@@ -19,7 +32,7 @@ const getReportData = catchAsync(async (req: Request, res: Response, next: NextF
     if (startDate > endDate) {
         throw {
             message: "From date cannot be greater than to date",
-            status: 400,
+            status: 400
         };
     }
 
@@ -29,8 +42,8 @@ const getReportData = catchAsync(async (req: Request, res: Response, next: NextF
         userId: currentUser?.id!,
         date: {
             gte: startDate,
-            lte: endDate,
-        },
+            lte: endDate
+        }
     };
 
     if (category && category !== "all") {
@@ -44,34 +57,53 @@ const getReportData = catchAsync(async (req: Request, res: Response, next: NextF
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
+    // Get paginated transactions for the table
     const transactions = await prisma.transaction.findMany({
         where: filters,
         include: {
             category: {
-            select: {
-                id: true,
-                name: true,
-                icon: true,
-            },
-            },
+                select: {
+                    id: true,
+                    name: true,
+                    icon: true
+                }
+            }
         },
         orderBy: {
-            date: "asc",
+            date: "asc"
         },
         skip: (pageNum - 1) * limitNum,
         take: limitNum
     });
 
-    const totalIncome = transactions
-      .filter((item) => item.type === "INCOME")
-      .reduce((sum, item) => sum + item.amount, 0);
+    // Calculate income across ALL matching transactions
+    const incomeAggregate = await prisma.transaction.aggregate({
+        where: {
+            ...filters,
+            type: "INCOME"
+        },
+        _sum: {
+            amount: true
+        }
+    });
 
-    const totalExpense = transactions
-      .filter((item) => item.type === "EXPENSE")
-      .reduce((sum, item) => sum + item.amount, 0);
+    // Calculate expenses across ALL matching transactions
+    const expenseAggregate = await prisma.transaction.aggregate({
+        where: {
+            ...filters,
+            type: "EXPENSE"
+        },
+        _sum: {
+            amount: true
+        }
+    });
 
+    const totalIncome = incomeAggregate._sum.amount ?? 0;
+    const totalExpense = expenseAggregate._sum.amount ?? 0;
+
+    // Count ALL matching transactions
     const totalCount = await prisma.transaction.count({
-        where: filters,
+        where: filters
     });
 
     res.status(200).json({
@@ -81,18 +113,19 @@ const getReportData = catchAsync(async (req: Request, res: Response, next: NextF
                 totalIncome,
                 totalExpense,
                 netAmount: totalIncome - totalExpense,
-                totalTransactions: transactions.length,
+                totalTransactions: totalCount
             },
-            transactions,
+            transactions
         },
         meta: {
             total: totalCount,
             page: pageNum,
             limit: limitNum,
             totalPages: Math.ceil(totalCount / limitNum)
-        },
+        }
     });
-})
+});
+
 const getDownloadbleReport = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const {fromDate, toDate, category, type} = req.query
     const currentUser = req.userInfo

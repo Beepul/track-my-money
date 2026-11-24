@@ -136,7 +136,11 @@ export async function deleteTransactionAction(id:string) {
     return data
 }
 
-export async function updateTransaction(id: string, prevState: AddTransactionFormState, formData: FormData): Promise<AddTransactionFormState> {
+export async function updateTransaction(
+    id: string,
+    prevState: AddTransactionFormState,
+    formData: FormData
+): Promise<AddTransactionFormState> {
     const image = formData.get("image") as Blob | null;
 
     const rawData = {
@@ -146,33 +150,40 @@ export async function updateTransaction(id: string, prevState: AddTransactionFor
         type: formData.get("type") as "INCOME" | "EXPENSE",
         categoryId: String(formData.get("categoryId") ?? ""),
         date: String(formData.get("date") ?? ""),
-        image:  image && image.size > 0 ? image : undefined,
-    }
+        image: image && image.size > 0 ? image : undefined,
+    };
 
-    const validateFields = AddTransactionSchema.safeParse(rawData)
-    
+    const validateFields = AddTransactionSchema.safeParse(rawData);
 
-    if(!validateFields.success){
+    if (!validateFields.success) {
         return {
             errors: validateFields.error.flatten().fieldErrors,
             success: false,
             data: rawData,
             message: "Please fix the errors in the form.",
-        }
+        };
     }
 
-    const transactionRes = await UpdateTransactionApi(validateFields.data, id)
+    const transactionRes = await UpdateTransactionApi(
+        validateFields.data,
+        id
+    );
 
-    if( !transactionRes.success){
-      return {
+    if (!transactionRes.success) {
+        return {
+            errors: {},
+            success: false,
+            data: rawData,
+            message: transactionRes.message,
+        };
+    }
+
+    revalidatePath("/dashboard/transaction");
+    revalidatePath(`/dashboard/transaction/${id}`);
+
+    return {
+        success: true,
+        message: "Transaction updated successfully.",
         errors: {},
-        success: false,
-        // data: {},
-        message: transactionRes.message
-      }
-    }
-
-    revalidatePath("/dashboard/transaction")
-    revalidatePath(`/dashboard/transaction/${id}`)
-    redirect(`/dashboard/transaction/${id}`)
+    };
 }

@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/config/api.config"
 import { apiFetch } from "@/lib/apiFetch"
 import { cookies } from "next/headers"
+import { cache } from "react"
 
 export type User = {
   id: string,
@@ -93,3 +94,75 @@ export const GetDashboardChartsApi = async ({period="m"}: {period: string}): Pro
         data: data.result
     }
 }
+
+export type UserPreference = {
+    id: string,
+    userId: string,
+    currency: string,
+    currencyPosition: "BEFORE" | "AFTER",
+    defaultPeriod: "WEEKLY" | "MONTHLY" | "YEARLY";
+    recentTransactionCount: number,
+    theme: "LIGHT" | "DARK",
+    createdAt: string,
+    updatedAt: string
+}
+
+type UserPreferenceApiReturnType = {
+    success: boolean,
+    message: string,
+    data?: UserPreference
+}
+
+export const GetUserPreferenceApi = cache(async (): Promise<UserPreferenceApiReturnType> => {
+    const res = await apiFetch(`${API_BASE_URL}/preference`)
+    const data = await res.json()
+
+    if(!res.ok){
+        return {
+            success: false,
+            message: data.message || "Failed to load preferences",
+        }
+    }
+
+    return {
+        success: true,
+        message: data.message || "Preferences loaded successfully",
+        data: data.preferences
+    }
+})
+
+export type UpdatePreferencePayload = Partial<Pick<
+    UserPreference,
+    | "currency"
+    | "currencyPosition"
+    | "defaultPeriod"
+    | "recentTransactionCount"
+    | "theme"
+>>;
+
+export const UpdateUserPreferenceApi = async (
+    payload: UpdatePreferencePayload
+): Promise<UserPreferenceApiReturnType> => {
+    const res = await apiFetch(`${API_BASE_URL}/preference`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        return {
+            success: false,
+            message: data.message || "Failed to update preferences"
+        };
+    }
+
+    return {
+        success: true,
+        message: data.message || "Preferences updated successfully",
+        data: data.preferences
+    };
+};

@@ -132,13 +132,13 @@ export default function ReportsFormComponent ({categoryList, fromDate, toDate, c
                     }
                 </Field>
                 <div className="pt-7 flex items-center gap-4">
-                    <Button type="submit" className="flex-1 bg-t2m-primary py-5 cursor-pointer hover:bg-t2m-primary hover:opacity-75 disabled:bg-teal-500" disabled={pending}>
+                    <Button
+                        type="submit"
+                        disabled={pending}
+                        className="flex-1 bg-t2m-primary text-white dark:text-slate-900 py-5 cursor-pointer hover:bg-t2m-secondary disabled:opacity-50"
+                    >
                         <Search size={16} />
-                        {
-                            pending ? (
-                                "Generating..."
-                            ) : "Generate Report"
-                        }
+                        {pending ? "Generating..." : "Generate Report"}
                     </Button>
                     <Button type="button" className="py-5 cursor-pointer hover:bg-gray-700 transition-all duration-500" onClick={resetFilter}>Reset Filter</Button>
                 </div>

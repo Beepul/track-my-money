@@ -33,25 +33,30 @@ export async function registerUserApi(payload:RegisterPayloadType):Promise<Regis
         message: ''
     }
 }
-type UserLoginDataType = {
+
+export type UserLoginDataType = {
     id: string;
     first_name: string;
     last_name: string;
     email: string;
-    image?: string;
-    googleId?: string;
-    createdAt: Date;
+    image: string | null;
+    googleId: string | null;
+    createdAt: string;
     accessToken: string;
-}
-type SignInPayloadType = {
+    refreshToken: string;
+};
+
+export type SignInPayloadType = {
     email: string;
     password: string;
-}
-type SignInReturnType = {
+};
+
+export type SignInReturnType = {
     success: boolean;
     message: string;
-    data?: UserLoginDataType
-}
+    data?: UserLoginDataType;
+};
+
 
 export async function signInUserApi(payload:SignInPayloadType):Promise<SignInReturnType>{
     const res = await fetch(`${API_BASE_URL}/user/login`, {

@@ -24,32 +24,36 @@ export async function ChangeAccountInfo({first_name, last_name}: {first_name: st
     }
 }
 
-
-export async function UpdatePassword({currentPassword, newPassword, confirmPassword}: {
+export async function UpdatePassword({
+    currentPassword,
+    newPassword,
+    confirmPassword,
+}: {
     currentPassword: string;
     newPassword: string;
     confirmPassword: string;
 }) {
     const res = await apiFetch(`${API_BASE_URL}/user/update-password`, {
+        method: "PUT",
         body: JSON.stringify({
             oldPassword: currentPassword,
-            newPassword: newPassword, confirmPassword: confirmPassword
+            newPassword,
+            confirmPassword,
         }),
-        method: "PUT"
-    })
-    const data = await res.json()
-    console.log(data)
-    
-    if(!res.ok){
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
         return {
             success: false,
-            message: data.message || "Failed to update password"
-        }
+            message: data.message || "Failed to update password",
+        };
     }
 
     return {
         success: true,
-        message: data.message,
-        data: data.result
-    }
+        message: data.message || "Password updated successfully.",
+        data: data.result,
+    };
 }

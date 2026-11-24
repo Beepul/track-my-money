@@ -1,4 +1,6 @@
 "use client"
+import { useApp } from "@/app/context/AppProvider"
+import { formatCurrency } from "@/lib/formatCurrency"
 import { PieChart as PieChartIcon } from "lucide-react"
 import { Pie, ResponsiveContainer, PieChart, Cell, Tooltip, Legend, PieSectorShapeProps, Sector} from "recharts"
 
@@ -26,6 +28,7 @@ const MyCustomPie = (props: PieSectorShapeProps) => {
 
 
 export default function ExpenseCatChart ({data}: ExpenseCatChartProps) {
+    const { preferences } = useApp()
     const renderLegend = () => {
         return (
             <ul className="flex flex-wrap justify-center gap-4 text-sm mt-2">
@@ -41,20 +44,20 @@ export default function ExpenseCatChart ({data}: ExpenseCatChartProps) {
             </ul>
         );
     };
-    if(data.length <= 0){
+   if (data.length <= 0) {
         return (
-            <div className="h-[300px] w-full flex items-center justify-center rounded-lg border border-dashed bg-gray-50">
+            <div className="h-[300px] w-full flex items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
                 <div className="text-center px-6">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white border">
-                        <PieChartIcon className="h-6 w-6 text-gray-400" />
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-card border border-border">
+                        <PieChartIcon className="h-6 w-6 text-muted-foreground" />
                     </div>
 
-                    <h5 className="text-sm font-medium text-t2m-text-primary">
-                    No chart data available
+                    <h5 className="text-sm font-medium text-foreground">
+                        No expense data available
                     </h5>
 
-                    <p className="mt-1 text-sm text-t2m-text-secondary">
-                    Add income or expense transactions to see your chart.
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Add expense transactions to see your spending breakdown by category.
                     </p>
                 </div>
             </div>
@@ -74,18 +77,28 @@ export default function ExpenseCatChart ({data}: ExpenseCatChartProps) {
                         innerRadius={55}
                         paddingAngle={3}
                         shape={MyCustomPie}
+                        stroke={preferences.theme === "DARK" ? "#1F2937" : "#FFFFFF"}
+                        strokeWidth={2}
                     />
-                        {/* {data.map((_, index) => (
-                        <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
+                        <Tooltip
+                            cursor={{
+                                fill: preferences.theme === "DARK"
+                                    ? "rgba(255, 255, 255, 0.04)"
+                                    : "rgba(0, 0, 0, 0.03)"
+                            }}
+                            contentStyle={{
+                                backgroundColor: preferences.theme === "DARK" ? "#1F2937" : "#FFFFFF",
+                                border: `1px solid ${preferences.theme === "DARK" ? "#374151" : "#E5E7EB"}`,
+                                borderRadius: "8px"
+                            }}
+                            itemStyle={{
+                                color: preferences.theme === "DARK" ? "#F9FAFB" : "#111827"
+                            }}
+                            formatter={(value) => [
+                                formatCurrency(Number(value ?? 0), preferences),
+                                "Amount"
+                            ]}
                         />
-                        ))} */}
-                    {/* </Pie> */}
-
-                    <Tooltip
-                        formatter={(value) => [`$${value}`, "Amount"]}
-                    />
 
                     <Legend content={renderLegend} />
                 </PieChart>

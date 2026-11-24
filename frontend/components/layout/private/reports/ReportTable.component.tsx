@@ -1,231 +1,273 @@
+
 "use client";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Transaction } from "@/app/dashboard/transaction/actions";
+import { useApp } from "@/app/context/AppProvider";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 type ReportTableProps = {
-  transactions: Transaction[];
-  fromDate: string;
-  toDate: string;
-  meta: {
+    transactions: Transaction[];
+    fromDate: string;
+    toDate: string;
+    meta: {
         total: number;
         page: number;
         limit: number;
         totalPages: number;
     };
-    category: string; type: string;
+    category: string;
+    type: string;
 };
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-AU", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+    return new Date(date).toLocaleDateString("en-AU", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
 }
 
-export default function ReportTable({ transactions, fromDate, toDate, meta, category, type }: ReportTableProps) {
-
+export default function ReportTable({
+    transactions,
+    fromDate,
+    toDate,
+    meta,
+    category,
+    type,
+}: ReportTableProps) {
     const router = useRouter();
+    const { preferences } = useApp();
+
+    const buildUrl = (page: number, limit: number) => {
+        const params = new URLSearchParams({
+            fd: fromDate,
+            td: toDate,
+            c: category,
+            t: type,
+            page: String(page),
+            limit: String(limit),
+        });
+
+        return `/dashboard/reports?${params.toString()}`;
+    };
+
     const changeLimit = (value: string) => {
-        router.push(`/dashboard/reports?fd=${fromDate}&td=${toDate}&page=1&limit=${value}&c=${category}&t=${type}`);
-    }; 
-  if (!transactions.length) {
-    return (
-      <div className="rounded-lg border border-dashed bg-gray-50 p-10 text-center">
-        <p className="font-medium text-t2m-text-primary">No report data found</p>
-        <p className="text-sm text-t2m-text-secondary mt-1">
-          Select a date range and generate a report.
-        </p>
-      </div>
-    );
-  }
+        router.push(buildUrl(1, Number(value)));
+    };
 
-  return (
-    <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
-      <div className="p-5 border-b">
-        <h3 className="text-lg font-semibold text-t2m-text-primary">
-          Transaction Statement 
-        </h3>
-        <p className="text-sm text-t2m-text-secondary">
-          Detailed income and expense report from <span className="font-semibold">{fromDate}</span> to <span className="font-semibold">{toDate}</span>
-        </p>
-      </div>
-
-      <Table>
-        <TableHeader className="bg-gray-50">
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {transactions.map((transaction) => {
-            const isIncome = transaction.type === "INCOME";
-
-            return (
-              <TableRow key={transaction.id}>
-                <TableCell>{formatDate(transaction.date)}</TableCell>
-
-                <TableCell className="font-medium capitalize">
-                  {transaction.title}
-                </TableCell>
-
-                <TableCell className="capitalize">
-                  {transaction.category?.name || "Uncategorized"}
-                </TableCell>
-
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={
-                      isIncome
-                        ? "bg-green-50 text-green-600 border-green-200"
-                        : "bg-red-50 text-red-600 border-red-200"
-                    }
-                  >
-                    {transaction.type}
-                  </Badge>
-                </TableCell>
-
-                <TableCell
-                  className={`text-right font-semibold ${
-                    isIncome ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {isIncome ? "+" : "-"}${transaction.amount.toFixed(2)}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-        <div className="flex items-center justify-between border-t px-4 py-3">
-            <div className="flex items-center gap-4">
-                <p className="text-sm text-gray-500">
-                    Page {meta.page} of {meta.totalPages}
+    if (!transactions.length) {
+        return (
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 p-10 text-center">
+                <p className="font-medium text-foreground">
+                    No report data found
                 </p>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Rows per page</span>
+                <p className="text-sm text-muted-foreground mt-1">
+                    No transactions match your selected filters.
+                </p>
+            </div>
+        );
+    }
 
-                    <Select value={String(meta.limit)} onValueChange={changeLimit}>
-                        <SelectTrigger className="w-[90px]">
-                            <SelectValue placeholder="Limit" />
-                        </SelectTrigger>
+    return (
+        <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
 
-                        <SelectContent>
-                            <SelectItem value="5">5</SelectItem>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <p className="text-sm text-gray-500 whitespace-nowrap">
-                    Total: {meta.total}
+            {/* Table Header */}
+            <div className="p-5 border-b border-border">
+                <h3 className="text-lg font-semibold text-t2m-text-primary">
+                    Transaction Statement
+                </h3>
+
+                <p className="text-sm text-t2m-text-secondary mt-1">
+                    Detailed income and expense report from{" "}
+                    <span className="font-semibold">{fromDate}</span>
+                    {" "}to{" "}
+                    <span className="font-semibold">{toDate}</span>
                 </p>
             </div>
 
-            <div className="flex items-center gap-2">
-                {meta.page <= 1 ? <>
+            {/* Transactions */}
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold text-foreground">
+                                Date
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Description
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Category
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Type
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Amount
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                        {transactions.map((transaction) => {
+                            const isIncome = transaction.type === "INCOME";
+
+                            return (
+                                <TableRow
+                                    key={transaction.id}
+                                    className="border-border hover:bg-accent/40 transition-colors"
+                                >
+                                    <TableCell className="text-t2m-text-secondary whitespace-nowrap">
+                                        {formatDate(transaction.date)}
+                                    </TableCell>
+
+                                    <TableCell className="font-medium capitalize text-foreground">
+                                        {transaction.title}
+                                    </TableCell>
+
+                                    <TableCell className="capitalize text-t2m-text-secondary">
+                                        {transaction.category?.name || "Uncategorized"}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Badge
+                                            variant="outline"
+                                            className={
+                                                isIncome
+                                                    ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900"
+                                                    : "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900"
+                                            }
+                                        >
+                                            {transaction.type}
+                                        </Badge>
+                                    </TableCell>
+
+                                    <TableCell
+                                        className={`text-right font-semibold whitespace-nowrap ${
+                                            isIncome
+                                                ? "text-green-600 dark:text-green-400"
+                                                : "text-red-600 dark:text-red-400"
+                                        }`}
+                                    >
+                                        {isIncome ? "+" : "-"}
+                                        {formatCurrency(
+                                            Math.abs(transaction.amount),
+                                            preferences
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-4 py-3">
+
+                <div className="flex flex-wrap items-center gap-4">
+                    <p className="text-sm text-muted-foreground">
+                        Page {meta.page} of {meta.totalPages}
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                            Rows per page
+                        </span>
+
+                        <Select
+                            value={String(meta.limit)}
+                            onValueChange={changeLimit}
+                        >
+                            <SelectTrigger className="w-[90px] bg-background border-border">
+                                <SelectValue placeholder="Limit" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectItem value="5">5</SelectItem>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="20">20</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground whitespace-nowrap">
+                        Total: {meta.total}
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Previous */}
                     <Button
                         variant="outline"
                         size="sm"
                         disabled={meta.page <= 1}
-                        className={meta.page <= 1 ? "cursor-not-allowed" : "cursor-pointer"}
+                        className="cursor-pointer disabled:cursor-not-allowed"
+                        onClick={() => router.push(buildUrl(meta.page - 1, meta.limit))}
                     >
                         <ChevronLeft size={16} />
                         Previous
                     </Button>
-                </> : <>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1">
+                        {Array.from({ length: meta.totalPages }).map((_, index) => {
+                            const page = index + 1;
+                            const isActive = page === meta.page;
+
+                            return (
+                                <Button
+                                    key={page}
+                                    variant={isActive ? "default" : "outline"}
+                                    size="sm"
+                                    disabled={isActive}
+                                    className={
+                                        isActive
+                                            ? "bg-t2m-primary text-white dark:text-slate-900 disabled:opacity-100 cursor-default"
+                                            : "cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                                    }
+                                    onClick={() => router.push(buildUrl(page, meta.limit))}
+                                >
+                                    {page}
+                                </Button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Next */}
                     <Button
                         variant="outline"
                         size="sm"
-                        asChild
-                        disabled={meta.page <= 1}
-                        className={meta.page <= 1 ? "cursor-not-allowed" : "cursor-pointer"}
+                        disabled={meta.page >= meta.totalPages}
+                        className="cursor-pointer disabled:cursor-not-allowed"
+                        onClick={() => router.push(buildUrl(meta.page + 1, meta.limit))}
                     >
-                        <Link href={`/dashboard/reports?page=${meta.page - 1}&limit=${meta.limit}&c=${category}&t=${type}&fd=${fromDate}&td=${toDate}`}>
-                            <ChevronLeft size={16} />
-                            Previous
-                        </Link>
+                        Next
+                        <ChevronRight size={16} />
                     </Button>
-                </>}
-
-                <div className="flex items-center gap-1">
-                    {Array.from({ length: meta.totalPages }).map((_, index) => {
-                        const page = index + 1;
-
-                        return (
-                            <Button
-                                key={page}
-                                variant={page === meta.page ? "default" : "outline"}
-                                size="sm"
-                                asChild
-                                className={
-                                    page === meta.page
-                                        ? "bg-t2m-primary hover:bg-t2m-primary cursor-default"
-                                        : "cursor-pointer hover:bg-gray-50"
-                                }
-                            >
-                                <Link href={`/dashboard/reports?page=${page}&limit=${meta.limit}&c=${category}&t=${type}&fd=${fromDate}&td=${toDate}`}>
-                                    {page}
-                                </Link>
-                            </Button>
-                        );
-                    })}
                 </div>
-
-                {
-                    meta.page >= meta.totalPages ? <>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={meta.page >= meta.totalPages}
-                            className={
-                                meta.page >= meta.totalPages ? "cursor-not-allowed" : "cursor-pointer"
-                            }
-                        >
-                            Next
-                            <ChevronRight size={16} />
-                        </Button>
-                    </> : <>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            disabled={meta.page >= meta.totalPages}
-                            className={
-                                meta.page >= meta.totalPages ? "cursor-not-allowed" : "cursor-pointer"
-                            }
-                        >
-                            <Link href={`/dashboard/reports?page=${meta.page + 1}&limit=${meta.limit}&c=${category}&t=${type}&fd=${fromDate}&td=${toDate}`}>
-                                Next
-                                <ChevronRight size={16} />
-                            </Link>
-                        </Button>
-                    </>
-                }
             </div>
         </div>
-    </div>
-  );
+    );
 }

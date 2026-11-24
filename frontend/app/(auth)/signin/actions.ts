@@ -17,64 +17,70 @@ export type SignInFormState = {
         password?: string[];
     };
 }
-export async function signIn(_prevState: SignInFormState, form: FormData): Promise<SignInFormState> {
-  const email = form.get("email") as string;
-  const password = form.get("password") as string;
+export async function signIn(
+    _prevState: SignInFormState,
+    form: FormData
+): Promise<SignInFormState> {
+    const email = String(form.get("email") ?? "");
+    const password = String(form.get("password") ?? "");
 
-  const validatedFields = SignInSchema.safeParse({
-    email,
-    password,
-  });
+    const validatedFields = SignInSchema.safeParse({
+        email,
+        password,
+    });
 
-  if (!validatedFields.success) {
-    return {
-        success: false,
-        message: "Please fix the errors in the form.",
-        data: {
-            email,
-            password
-        },
-        errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  const userData = await signInUserApi({email,password}) 
-
-  if(!userData.success){
-    return {
-        success: false,
-        message: userData.message,
-        data: {},
-        errors: {}
-    }
-  }
-
-  if (!userData.data?.accessToken) {
-    return {
+    if (!validatedFields.success) {
+        return {
             success: false,
-            message: "Access token was not returned.",
-            data: {
-            email,
-            },
+            message: "Please fix the errors in the form.",
+            data: { email },
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
+    }
+
+    const userData = await signInUserApi(validatedFields.data);
+
+    if (!userData.success) {
+        return {
+            success: false,
+            message: userData.message || "Invalid email or password.",
+            data: { email },
             errors: {},
         };
     }
-  const cookieStore = await cookies()
-  console.log("Loggedin As::", userData)
 
-  cookieStore.set('T2M_LOGIN', userData.data?.accessToken, { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 4,
-    path: '/'
-  })
+    if (
+        !userData.data?.accessToken ||
+        !userData.data?.refreshToken
+    ) {
+        return {
+            success: false,
+            message: "Authentication tokens were not returned.",
+            data: { email },
+            errors: {},
+        };
+    }
 
-  redirect("/dashboard")
+    const cookieStore = await cookies();
 
-  return { 
-    success: true,
-    message: "User Signin Successfully",
-    errors: {},
-    data: {}
-   };
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        path: "/",
+    };
+
+    // Access token
+    cookieStore.set("T2M_LOGIN", userData.data.accessToken, {
+        ...cookieOptions,
+        maxAge: 60, // 15 minutes
+    });
+
+    // Refresh token
+    cookieStore.set("T2M_REFRESH", userData.data.refreshToken, {
+        ...cookieOptions,
+        maxAge: 5 * 60, // 7 days
+    });
+
+    redirect("/dashboard");
 }

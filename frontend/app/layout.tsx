@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ABeeZee, Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const aBeeZee = ABeeZee({
   variable: "--font-abeezee-sans",
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${aBeeZee.variable} ${inter.variable} antialiased`}>
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

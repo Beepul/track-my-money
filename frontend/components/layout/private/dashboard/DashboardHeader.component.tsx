@@ -13,11 +13,14 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import ThemeToggler from "../ui/ThemeToggler.component";
 import { User } from "@/app/dashboard/api";
+import { useApp } from "@/app/context/AppProvider";
+import DashboardPeriodSelector from "./DashboardPeriodSelector.component";
 
 
 
 
 export default function DashboardHeader({user}: {user: User}) {
+  const { preferences } = useApp();
   const router = useRouter();
   const pathname = usePathname()
   const isDashboard = pathname.split('/').pop() == 'dashboard'
@@ -25,7 +28,15 @@ export default function DashboardHeader({user}: {user: User}) {
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
-  const currentPeriod = searchParams.get("period") || "m";
+  const periodMap = {
+    WEEKLY: "w",
+    MONTHLY: "m",
+    YEARLY: "y"
+} as const;
+
+  const currentPeriod =
+    searchParams.get("period") ||
+    periodMap[preferences.defaultPeriod];
 
   const changePeriod = (value: string) => {
     startTransition(() => {
@@ -41,6 +52,7 @@ export default function DashboardHeader({user}: {user: User}) {
       const secondCharacter = user.last_name.split("")[0]
       return `${firstCharacter}${secondCharacter}`
   }
+  
 
   return (
     <header className="flex items-center border-b">
@@ -61,18 +73,7 @@ export default function DashboardHeader({user}: {user: User}) {
         }
         <div className="flex-1 lg:flex items-center justify-end gap-5 hidden">
           <ThemeToggler />
-          {
-            isDashboard &&
-            <NativeSelect 
-                value={currentPeriod}
-                onChange={(e) => changePeriod(e.target.value)}
-                disabled={pending}
-            >
-              <NativeSelectOption value="w">Weekly</NativeSelectOption>
-              <NativeSelectOption value="m">Monthly</NativeSelectOption>
-              <NativeSelectOption value="y">Yearly</NativeSelectOption>
-            </NativeSelect>
-          }
+          {isDashboard && <DashboardPeriodSelector />}
           <DropdownMenu>
             <DropdownMenuTrigger className="cursor-pointer">
               <div className="flex items-center gap-3">
@@ -89,10 +90,14 @@ export default function DashboardHeader({user}: {user: User}) {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <button className="cursor-pointer w-full active:bg-gray-300" onClick={logout}>
-                  <LogOut />
-                  Logout
-                </button>
+                  <button
+                      type="button"
+                      onClick={() => void logout()}
+                      className="flex w-full cursor-pointer items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  >
+                      <LogOut size={16} />
+                      Logout
+                  </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

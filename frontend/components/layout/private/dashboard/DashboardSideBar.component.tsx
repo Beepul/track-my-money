@@ -65,7 +65,10 @@ const DashboardMenu = () => {
                                 <p>{item.title}</p>
                             </div>
                         </> : <>
-                            <Link href={item.href} className="flex items-center gap-2 p-3 rounded-sm hover:text-t2m-primary hover:bg-gray-50 transition-all duration-300">
+                            <Link
+                                href={item.href}
+                                className="flex items-center gap-2 p-3 rounded-md text-t2m-text-secondary hover:text-t2m-primary hover:bg-accent transition-colors duration-200"
+                            >
                                 <Icon size={16}/>
                                 {item.title}
                             </Link>

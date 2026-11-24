@@ -25,6 +25,8 @@ model User {
 
   transactions Transaction[]
   categories Category[]
+
+  preferences UserPreference?
 }
 
 model Transaction {
@@ -59,4 +61,36 @@ model Category {
 enum TransactionType {
   INCOME
   EXPENSE
+}
+
+model UserPreference {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  currency               String           @default("AUD")
+  currencyPosition       CurrencyPosition @default(BEFORE)
+  defaultPeriod          DashboardPeriod  @default(MONTHLY)
+  recentTransactionCount Int              @default(5)
+  theme                  AppTheme         @default(LIGHT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CurrencyPosition {
+  BEFORE
+  AFTER
+}
+
+enum DashboardPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum AppTheme {
+  LIGHT
+  DARK
 }

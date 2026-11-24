@@ -82,8 +82,12 @@ export async function deleteCategoryAction(id: string) {
 }
 
 
-export async function updateCategoryAction(id:string, prevState:CategoryFormState, formData: FormData): Promise<CategoryFormState>{
-   const rawData = {
+export async function updateCategoryAction(
+    id: string,
+    prevState: CategoryFormState,
+    formData: FormData
+): Promise<CategoryFormState> {
+    const rawData = {
         name: String(formData.get("name") ?? ""),
         icon: String(formData.get("icon") ?? ""),
     };
@@ -91,22 +95,34 @@ export async function updateCategoryAction(id:string, prevState:CategoryFormStat
     const validatedFields = CategorySchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-      return {
-        success: false,
-        message: "Please fix the errors in the form.",
-        errors: validatedFields.error.flatten().fieldErrors,
-        data: rawData,
-      };
+        return {
+            success: false,
+            message: "Please fix the errors in the form.",
+            errors: validatedFields.error.flatten().fieldErrors,
+            data: rawData,
+        };
     }
-    const res = await updateCategoryApi({id:id, payload: validatedFields.data});
+
+    const res = await updateCategoryApi({
+        id,
+        payload: validatedFields.data,
+    });
+
     if (!res.success) {
-      return {
-        success: false,
-        message: res.message,
+        return {
+            success: false,
+            message: res.message,
+            errors: {},
+            data: rawData,
+        };
+    }
+
+    revalidatePath("/dashboard/category");
+
+    return {
+        success: true,
+        message: res.message || "Category updated successfully",
         errors: {},
         data: rawData,
-      };
-    }
-  revalidatePath("/dashboard/category");
-  redirect("/dashboard/category");
+    };
 }

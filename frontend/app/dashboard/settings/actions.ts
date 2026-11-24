@@ -15,36 +15,46 @@ export type UpdateAccountState = {
     last_name?: string[];
   };
 };
-export async function UpdateAccountActions(prevState: UpdateAccountState, formData: FormData): Promise<UpdateAccountState> {
 
-  const rawData = {
-    first_name: String(formData.get("first_name") ?? ""),
-    last_name: String(formData.get("last_name") ?? "")
-  }
+export async function UpdateAccountActions(
+    prevState: UpdateAccountState,
+    formData: FormData
+): Promise<UpdateAccountState> {
+    const rawData = {
+        first_name: String(formData.get("first_name") ?? ""),
+        last_name: String(formData.get("last_name") ?? ""),
+    };
 
-  console.log(rawData)
-  
+    const validateFields = UpdateAccountSchema.safeParse(rawData);
 
-  const validateFields = UpdateAccountSchema.safeParse(rawData)
+    if (!validateFields.success) {
+        return {
+            errors: validateFields.error.flatten().fieldErrors,
+            success: false,
+            formData: rawData,
+            message: "Please fix the errors in the form.",
+        };
+    }
 
-  if(!validateFields.success){
+    const res = await ChangeAccountInfo(validateFields.data);
+
+    if (!res.success) {
+        return {
+            errors: {},
+            success: false,
+            formData: rawData,
+            message: res.message || "Failed to update account information.",
+        };
+    }
+
+    revalidatePath("/dashboard");
+
     return {
-      errors: validateFields.error.flatten().fieldErrors,
-      success: false,
-      formData: rawData,
-      message: "Please fix the errors in the form."
-    }
-  }
-
-  const res = await ChangeAccountInfo(rawData)
-
-  revalidatePath('/dashboard')
-  return {
-      errors: {},
-      success: true,
-      formData: res.data,
-      message: res.message
-    }
+        errors: {},
+        success: true,
+        formData: res.data,
+        message: res.message || "Account information updated successfully.",
+    };
 }
 
 export type UpdatePasswordState = {
