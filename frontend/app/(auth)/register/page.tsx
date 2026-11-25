@@ -1,82 +1,348 @@
-'use client'
+
+"use client";
+
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Image from "next/image";
-import Link from "next/link";
-import GoogleIcon from "@/public/google-icon.svg"
-import { RegisterFormState, registerUser } from "./actions";
-import { useActionState } from "react";
-import { redirect } from "next/navigation";
+
+import GoogleIcon from "@/public/google-icon.svg";
+import { registerUser, type RegisterFormState } from "./actions";
 
 const initialState: RegisterFormState = {
-  errors: {},
-  success: false,
-  data: {
-    first_name: "",
-    last_name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    errors: {},
+    success: false,
+    data: {
+        first_name: "",
+        last_name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
     },
-  message: "",
+    message: "",
 };
 
-export default function RegisterPage () {
-    const [state, formAction, pending] = useActionState(registerUser, initialState)
-    
-    if(state.success) redirect('/signin')
+export default function RegisterPage() {
+    const [state, formAction, pending] = useActionState(
+        registerUser,
+        initialState
+    );
+
+    const router = useRouter();
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] =
+        useState(false);
+
+    // Success toast and navigation
+    useEffect(() => {
+        if (!state.success) return;
+
+        toast.success(
+            state.message || "Account created successfully."
+        );
+
+        router.replace("/signin");
+    }, [state, router]);
+
+    const inputClass =
+        "h-12 border-border bg-background text-foreground placeholder:text-muted-foreground";
+
+    const labelClass =
+        "text-sm font-medium text-t2m-text-secondary";
+
+    const errorClass =
+        "text-xs text-red-500 dark:text-red-400";
+
+    const toggleClass =
+        "absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground";
+
     return (
-        <div className="shadow-lg p-8  rounded-2xl text-center text-sm min-w-3/5 md:min-w-1/2 lg:min-w-2/3 2xl:min-w-2/5">
-            <h4 className="font-bold text-3xl text-t2m-text-primary mb-3">Welcome To T2M</h4>
-            <p className="mb-6">Create account and joing T2M to take <br /><span>Control Of Your Finances</span></p>
-            <form action={formAction} className="text-start  border-b border-t2m-text-secondary pb-8 mb-8 relative">
-                <div className="flex items-center gap-6">
-                    <label htmlFor="first_name" className="">
-                        <span className="mb-2 inline-block">First Name</span><br />
-                        <Input type="text" name="first_name" id="first_name" defaultValue={state.data?.first_name ?? ""}/>
+        <div className="w-full max-w-[480px] rounded-2xl border border-border bg-card p-6 text-center text-sm text-card-foreground shadow-lg sm:p-8">
+
+            {/* Header */}
+            <h1 className="mb-2 text-3xl font-bold text-t2m-text-primary">
+                Welcome to T2M
+            </h1>
+
+            <p className="mb-8 text-sm text-t2m-text-secondary">
+                Create an account and take control of your finances.
+            </p>
+
+            {/* Register Form */}
+            <form
+                action={formAction}
+                className="relative space-y-5 border-b border-border pb-8 text-left"
+            >
+                {/* First Name & Last Name */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                    {/* First Name */}
+                    <div className="space-y-2">
+                        <label
+                            htmlFor="first_name"
+                            className={labelClass}
+                        >
+                            First Name
+                        </label>
+
+                        <Input
+                            type="text"
+                            name="first_name"
+                            id="first_name"
+                            placeholder="First name"
+                            autoComplete="given-name"
+                            defaultValue={
+                                state.data?.first_name ?? ""
+                            }
+                            required
+                            className={inputClass}
+                        />
+
                         {state.errors?.first_name && (
-                            <p className="text-red-500 text-xs mt-1">{state.errors.first_name[0]}</p>
+                            <p className={errorClass}>
+                                {state.errors.first_name[0]}
+                            </p>
                         )}
-                    </label>
-                    <label htmlFor="last_name" className="">
-                        <span className="mb-2 inline-block">Last Name</span><br />
-                        <Input type="text" name="last_name" id="last_name" defaultValue={state.data?.last_name ?? ""}/>
+                    </div>
+
+                    {/* Last Name */}
+                    <div className="space-y-2">
+                        <label
+                            htmlFor="last_name"
+                            className={labelClass}
+                        >
+                            Last Name
+                        </label>
+
+                        <Input
+                            type="text"
+                            name="last_name"
+                            id="last_name"
+                            placeholder="Last name"
+                            autoComplete="family-name"
+                            defaultValue={
+                                state.data?.last_name ?? ""
+                            }
+                            required
+                            className={inputClass}
+                        />
+
                         {state.errors?.last_name && (
-                            <p className="text-red-500 text-xs mt-1">{state.errors.last_name[0]}</p>
+                            <p className={errorClass}>
+                                {state.errors.last_name[0]}
+                            </p>
                         )}
+                    </div>
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                    <label
+                        htmlFor="email"
+                        className={labelClass}
+                    >
+                        Email Address
                     </label>
-                </div><br />
-                <label htmlFor="email" className="">
-                    <span className="mb-2 inline-block">Email</span><br />
-                    <Input type="email" name="email" id="email" defaultValue={state.data?.email ?? ""}/>
+
+                    <Input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="Enter your email address"
+                        autoComplete="email"
+                        defaultValue={state.data?.email ?? ""}
+                        required
+                        className={inputClass}
+                    />
+
                     {state.errors?.email && (
-                        <p className="text-red-500 text-xs mt-1">{state.errors.email[0]}</p>
+                        <p className={errorClass}>
+                            {state.errors.email[0]}
+                        </p>
                     )}
-                </label><br />
-                <label htmlFor="password">
-                    <span className="mb-2 inline-block">Password</span><br />
-                    <Input type="password" name="password" id="password" defaultValue={state.data?.password ?? ""}/>
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                    <label
+                        htmlFor="password"
+                        className={labelClass}
+                    >
+                        Password
+                    </label>
+
+                    <div className="relative">
+                        <Input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            id="password"
+                            placeholder="Enter your password"
+                            autoComplete="new-password"
+                            minLength={8}
+                            maxLength={15}
+                            required
+                            className={`${inputClass} pr-12`}
+                        />
+
+                        <button
+                            type="button"
+                            aria-label={
+                                showPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                            }
+                            aria-pressed={showPassword}
+                            onClick={() =>
+                                setShowPassword((prev) => !prev)
+                            }
+                            className={toggleClass}
+                        >
+                            {showPassword ? (
+                                <EyeOff size={19} />
+                            ) : (
+                                <Eye size={19} />
+                            )}
+                        </button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                        8–15 characters, including uppercase,
+                        lowercase, a number and a special character.
+                        No spaces.
+                    </p>
+
                     {state.errors?.password && (
-                        <p className="text-red-500 text-xs mt-1">{state.errors.password[0]}</p>
+                        <p className={errorClass}>
+                            {state.errors.password[0]}
+                        </p>
                     )}
-                </label><br />
-                <label htmlFor="confirmPassword">
-                    <span className="mb-2 inline-block">Confirm Password</span><br />
-                    <Input type="password" name="confirmPassword" id="confirmPassword" defaultValue={state.data?.confirmPassword ?? ""}/>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                    <label
+                        htmlFor="confirmPassword"
+                        className={labelClass}
+                    >
+                        Confirm Password
+                    </label>
+
+                    <div className="relative">
+                        <Input
+                            type={
+                                showConfirmPassword
+                                    ? "text"
+                                    : "password"
+                            }
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            placeholder="Confirm your password"
+                            autoComplete="new-password"
+                            minLength={8}
+                            maxLength={15}
+                            required
+                            className={`${inputClass} pr-12`}
+                        />
+
+                        <button
+                            type="button"
+                            aria-label={
+                                showConfirmPassword
+                                    ? "Hide confirmation password"
+                                    : "Show confirmation password"
+                            }
+                            aria-pressed={showConfirmPassword}
+                            onClick={() =>
+                                setShowConfirmPassword(
+                                    (prev) => !prev
+                                )
+                            }
+                            className={toggleClass}
+                        >
+                            {showConfirmPassword ? (
+                                <EyeOff size={19} />
+                            ) : (
+                                <Eye size={19} />
+                            )}
+                        </button>
+                    </div>
+
                     {state.errors?.confirmPassword && (
-                        <p className="text-red-500 text-xs mt-1">{state.errors.confirmPassword[0]}</p>
+                        <p className={errorClass}>
+                            {state.errors.confirmPassword[0]}
+                        </p>
                     )}
-                </label><br />
-                {(!state.success && state.message) && (
-                    <div className="bg-red-100 p-2 rounded-md mb-4">
-                        <p className="text-red-500 text-xs mt-1 text-center">{state.message}</p>
+                </div>
+
+                {/* General API Error */}
+                {!state.success && state.message && (
+                    <div
+                        className="rounded-md border border-red-200 bg-red-50 p-3 text-center dark:border-red-900 dark:bg-red-950/30"
+                        role="alert"
+                    >
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                            {state.message}
+                        </p>
                     </div>
                 )}
-                <Button className="w-full bg-t2m-primary cursor-pointer hover:bg-teal-700 duration-300 disabled:bg-teal-600" disabled={pending}>Submit</Button>
-                <span className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 bg-white px-2 text-center text-xs md:text-sm">Or continue with</span>
+
+                {/* Submit Button */}
+                <Button
+                    type="submit"
+                    disabled={pending}
+                    className="h-12 w-full cursor-pointer bg-t2m-primary font-medium text-white transition-colors hover:bg-t2m-secondary disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-900"
+                >
+                    {pending ? (
+                        <>
+                            <LoaderCircle
+                                size={18}
+                                className="animate-spin"
+                            />
+                            Creating Account...
+                        </>
+                    ) : (
+                        "Create Account"
+                    )}
+                </Button>
+
+                {/* Divider */}
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap bg-card px-3 text-xs text-muted-foreground">
+                    Or continue with
+                </span>
             </form>
-            <Button className="mb-8 w-full cursor-pointer" size={"lg"}><Image src={GoogleIcon} alt="G" height={16} width={16} /> Sign in with Google</Button>
-            <p>Already have an account? <Link href={'/signin'} className="text-t2m-primary">Sign In</Link></p>
+
+            {/* Google Sign In */}
+            <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="mt-8 mb-6 h-12 w-full cursor-pointer border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+                <Image
+                    src={GoogleIcon}
+                    alt="Google"
+                    width={18}
+                    height={18}
+                />
+                Sign in with Google
+            </Button>
+
+            {/* Sign In Link */}
+            <p className="text-sm text-t2m-text-secondary">
+                Already have an account?{" "}
+                <Link
+                    href="/signin"
+                    className="font-medium text-t2m-primary hover:underline"
+                >
+                    Sign In
+                </Link>
+            </p>
         </div>
-    )
+    );
 }

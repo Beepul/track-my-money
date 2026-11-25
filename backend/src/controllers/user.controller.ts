@@ -285,113 +285,176 @@ const updateUserInfo = catchAsync(async (req: Request, res: Response, next: Next
 })
 
 
-const forgetPassword = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
-    const {email} = req.body 
+const forgetPassword = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const { email } = req.body;
 
-    const user = await prisma.user.findUnique({
-        where: {
-            email: email.trim()
-        }
-    })
+        const normalizedEmail = email.trim();
 
-    if(!user) {
-        throw {
-            message: `User with email: ${email} doesnot exist`,
-            status: 400
+        const user = await prisma.user.findUnique({
+            where: {
+                email: normalizedEmail,
+            },
+        });
+
+        // Don't reveal whether an email is registered.
+        if (!user) {
+            return res.status(200).json({
+                result: null,
+                meta: null,
+                message:
+                    "If an account exists for this email, a password reset link has been sent.",
+            });
         }
+
+        const toTitleCase = (name: string): string => {
+            return name
+                .split(" ")
+                .map(
+                    (word) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase()
+                )
+                .join(" ");
+        };
+
+        const pwdResetHTMLPath = path.join(
+            __dirname,
+            "..",
+            "mails",
+            "pwd-reset.template.html"
+        );
+
+        const pwdResetHTML = fs.readFileSync(
+            pwdResetHTMLPath,
+            "utf-8"
+        );
+
+        // 15-minute reset token
+        const pwdResetToken = generatePwdResetToken(
+            user.id,
+            "15m"
+        );
+
+        const frontendUrl =
+            process.env.FRONTEND_URL ||
+            "http://localhost:3000";
+
+        const resetLink =
+            `${frontendUrl}/reset-password?t=${encodeURIComponent(pwdResetToken)}`;
+
+        const mailData = {
+            name:
+                toTitleCase(user.first_name) +
+                " " +
+                toTitleCase(user.last_name),
+            expires_in: "15 minutes",
+            resetLink,
+        };
+
+        const replacedHTML = pwdResetHTML.replace(
+            /{{(.*?)}}/g,
+            (_, key) => {
+                return (
+                    mailData[
+                        key.trim() as keyof typeof mailData
+                    ] || ""
+                );
+            }
+        );
+
+        const sentMail = await sendEmail({
+            to: user.email,
+            subject: "T2M Reset Password",
+            html: replacedHTML,
+        });
+
+        if (sentMail !== "OK") {
+            throw {
+                message:
+                    "Failed to send email. Please try again later.",
+                status: 500,
+            };
+        }
+
+        return res.status(200).json({
+            result: null,
+            meta: null,
+            message:
+                "If an account exists for this email, a password reset link has been sent.",
+        });
     }
+);
 
-    const toTitleCase = (name: string): string => {
-        return name
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
-    };
 
-    const pwdResetHTMLPath = path.join(__dirname, '..', 'mails', 'pwd-reset.template.html')
-    
-    const pwdResetHTML = fs.readFileSync(pwdResetHTMLPath, 'utf-8')
+const resetPassword = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const { token } = req.params;
+        const { password } = req.body;
 
-    const pwdResetToken = generatePwdResetToken(user.id, '1m')
+        let decoded: { userId: string };
 
-    const mailData = {
-        name: toTitleCase(user.first_name) + ' ' + toTitleCase(user.last_name),
-        expires_in: '1 minute',
-        resetLink: `http://localhost:3000/auth/reset-password?t=${pwdResetToken}`
-    };
+        try {
+            decoded = verifyPwdResetToken(token as string) as {
+                userId: string;
+            };
 
-    console.log(mailData)
-    
-    const replacedHTML = pwdResetHTML.replace(/{{(.*?)}}/g, (_, key) => {
-        return mailData[key.trim() as keyof typeof mailData] || ''
-    })
-
-    const sentMail = await sendEmail({
-        to: user.email,
-        subject: 'T2M Reset Password',
-        html: replacedHTML
-    })
-
-    if(sentMail !== 'OK'){
-        throw {
-            message: 'Failed to send mail, Please try again later',
-            status: 400
+            if (!decoded?.userId) {
+                throw new Error("Invalid token payload");
+            }
+        } catch {
+            throw {
+                message:
+                    "Password reset link is invalid or expired. Please request a new one.",
+                status: 400,
+            };
         }
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: decoded.userId,
+            },
+        });
+
+        if (!user) {
+            throw {
+                message: "Invalid password reset link.",
+                status: 400,
+            };
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(
+            password,
+            salt
+        );
+
+        await prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                password: hashedPassword,
+            },
+        });
+
+        return res.status(200).json({
+            result: null,
+            meta: null,
+            message:
+                "Password reset successfully. Please sign in with your new password.",
+        });
     }
+);
 
-    res.status(200).json({
-        result: null,
-        meta: null,
-        message: 'Password reset link has been sent to your mail'
-    })
-    
-})
-
-
-const resetPassword = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
-    const {token} = req.params
-    const {password} = req.body
-
-    const decoded = verifyPwdResetToken(token as string) as {userId: string}
-
-    if(!decoded) {
-        throw {
-            message: 'Token invalid, Please use another token',
-            status: 400
-        }
-    }
-
-    const user = await prisma.user.findUnique({
-        where: {
-            id: decoded.userId 
-        }
-    })
-
-    if(!user) {
-        throw {
-            message: 'User not found',
-            status: 400
-        }
-    }
-
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt)
-
-    await prisma.user.update({
-        where: {
-            id: decoded.userId
-        },
-        data: {
-            password: hashedPassword
-        }
-    })
-
-    res.status(200).json({
-        result: null,
-        meta: null,
-        message: 'Your password has been reset, Please login to continue further'
-    })
-})
 
 
 

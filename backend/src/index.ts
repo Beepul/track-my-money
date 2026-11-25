@@ -7,6 +7,7 @@ import mainRouter from './routes'
 import path from 'path';
 import multer from 'multer';
 import prisma from './config/prisma.client';
+import { verifySMTP } from './config/mailer.config';
 
 dotenv.config();
 
@@ -57,6 +58,8 @@ async function startServer() {
     app.listen(port, () => {
       console.log(`[SERVER] Server running on http://localhost:${port}`);
     });
+
+    await verifySMTP();
 
   } catch (error) {
     console.error("[DB ERR] Database connection failed");
