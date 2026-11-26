@@ -4,20 +4,69 @@ import prisma from "../config/prisma.client";
 import { AppTheme, CurrencyPosition, DashboardPeriod } from "@prisma/client";
 
 
-const getUserPreference = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.userInfo?.id!;
 
-    const preferences = await prisma.userPreference.upsert({
-      where: { userId },
-      update: {},
-      create: { userId },
-    });
+import { Prisma } from "@prisma/client";
 
-    res.status(200).json({
-      success: true,
-      preferences,
-    });
-})
+const getUserPreference = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const userId = req.userInfo?.id;
+
+        if (!userId) {
+            throw {
+                message: "Unauthorized",
+                status: 401,
+            };
+        }
+
+        let preferences = await prisma.userPreference.findUnique({
+            where: {
+                userId,
+            },
+        });
+
+        // Create default preferences only if missing
+        if (!preferences) {
+            try {
+                preferences = await prisma.userPreference.create({
+                    data: {
+                        userId,
+                    },
+                });
+            } catch (error) {
+                // Another request may have created it concurrently
+                if (
+                    error instanceof Prisma.PrismaClientKnownRequestError &&
+                    error.code === "P2002"
+                ) {
+                    preferences = await prisma.userPreference.findUnique({
+                        where: {
+                            userId,
+                        },
+                    });
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        if (!preferences) {
+            throw {
+                message: "Unable to load user preferences",
+                status: 500,
+            };
+        }
+
+        return res.status(200).json({
+            success: true,
+            preferences,
+        });
+    }
+);
+
 
 // UPDATE USER PREFERENCES
 const updateUserPreference = catchAsync(async (

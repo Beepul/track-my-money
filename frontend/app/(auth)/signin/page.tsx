@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 
 import GoogleIcon from "@/public/google-icon.svg";
 import { signIn, type SignInFormState } from "./actions";
+import GoogleAuthButton from "@/components/layout/public/GoogleAuthButton";
 
 const initialState: SignInFormState = {
     success: false,
@@ -170,20 +171,9 @@ export default function SignInPage() {
             </form>
 
             {/* Google Sign In */}
-            <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="mt-8 mb-6 h-12 w-full cursor-pointer border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-                <Image
-                    src={GoogleIcon}
-                    alt="Google"
-                    height={18}
-                    width={18}
-                />
-                Sign in with Google
-            </Button>
+            <div className="mt-8 mb-6">
+                <GoogleAuthButton mode="signin" />
+            </div>
 
             {/* Register */}
             <p className="text-sm text-t2m-text-secondary">

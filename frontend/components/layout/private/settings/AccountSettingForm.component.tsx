@@ -21,6 +21,7 @@ import {
     UpdateAccountState,
 } from "@/app/dashboard/settings/actions";
 import { toast } from "sonner";
+import GoogleLinkAccount from "./GoogleLinkAccount.component";
 
 const initialState: UpdateAccountState = {
     success: false,
@@ -45,10 +46,10 @@ export default function AccountSettingForm({ user }: { user: User }) {
     }, [state]);
 
     const getProfilePlaceholder = () => {
-        const firstCharacter = user.first_name?.charAt(0) || "";
-        const secondCharacter = user.last_name?.charAt(0) || "";
+        const firstCharacter = user.first_name?.trim().charAt(0) || "";
+        const secondCharacter = user.last_name?.trim().charAt(0) || "";
 
-        return `${firstCharacter}${secondCharacter}`;
+        return `${firstCharacter}${secondCharacter}`.toUpperCase() || "U";
     };
 
     function formatDate(date: string) {
@@ -78,12 +79,15 @@ export default function AccountSettingForm({ user }: { user: User }) {
                             <div className="mb-6 flex flex-col items-center gap-4 lg:mb-0">
                                 {user.image ? (
                                     <Image
-                                        src={profile}
-                                        alt="Profile"
-                                        className="rounded-full object-cover h-[100px] w-[100px] border border-border"
+                                        src={user.image}
+                                        alt={`${user.first_name}'s profile`}
+                                        width={100}
+                                        height={100}
+                                        className="h-[100px] w-[100px] rounded-full object-cover border border-border"
+                                        referrerPolicy="no-referrer"
                                     />
                                 ) : (
-                                    <span className="uppercase flex items-center justify-center text-3xl font-semibold rounded-full bg-amber-800 text-white h-[100px] w-[100px]">
+                                    <span className="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-t2m-primary text-3xl font-semibold text-white uppercase">
                                         {getProfilePlaceholder()}
                                     </span>
                                 )}
@@ -229,6 +233,9 @@ export default function AccountSettingForm({ user }: { user: User }) {
                     </Field>
                 </FieldGroup>
             </form>
+            <GoogleLinkAccount
+                isLinked={Boolean(user.googleId)}
+            />
         </div>
     );
 }

@@ -7,7 +7,7 @@ import path from "path"
 import fs from 'fs'
 import sendEmail from "../config/mailer.config"
 import { newPasswordSchema, oldPasswordSchema } from "../validations/user.schema"
-
+import { OAuth2Client } from "google-auth-library";
 
 const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
@@ -456,6 +456,227 @@ const resetPassword = catchAsync(
 );
 
 
+const googleClient = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID
+);
+
+const googleAuth = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const { credential } = req.body;
+
+        if (
+            typeof credential !== "string" ||
+            !credential
+        ) {
+            throw {
+                message: "Google credential is required",
+                status: 400,
+            };
+        }
+
+        // Verify the Google ID token on the backend
+        let payload;
+
+        try {
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID!,
+            });
+
+            payload = ticket.getPayload();
+        } catch {
+            throw {
+                message: "Invalid Google credential",
+                status: 401,
+            };
+        }
+
+        if (
+            !payload?.sub ||
+            !payload.email ||
+            !payload.email_verified
+        ) {
+            throw {
+                message: "Google account verification failed",
+                status: 401,
+            };
+        }
+
+        const googleId = payload.sub;
+        const email = payload.email;
+        const firstName = payload.given_name || "Google";
+        const lastName = payload.family_name || "";
+
+        // Check existing Google account
+        let user = await prisma.user.findUnique({
+            where: { googleId },
+        });
+
+        if (!user) {
+            // Check whether email is already registered
+            const existingUser = await prisma.user.findUnique({
+                where: { email },
+            });
+
+            if (existingUser) {
+                // Don't automatically link an existing
+                // password-based account using only email.
+                throw {
+                    message:
+                        "This email is already registered. Sign in using your existing method to link Google.",
+                    status: 409,
+                };
+            }
+
+            // Create a new Google account
+            user = await prisma.user.create({
+                data: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email,
+                    googleId,
+                    password: null,
+                    image: payload.picture || null,
+                },
+            });
+        }
+
+        // Reuse your existing JWT functions
+        const accessToken = generateAccessToken(user.id);
+        const refreshToken = generateRefreshToken(user.id);
+
+        const { password: _password, ...resultUser } = user;
+
+        return res.status(200).json({
+            success: true,
+            message: "Google authentication successful",
+            result: {
+                ...resultUser,
+                accessToken,
+                refreshToken,
+            },
+            meta: null,
+        });
+    }
+);
+
+
+const linkGoogleAccount = catchAsync(
+    async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const userId = req.userInfo?.id;
+        const { credential } = req.body;
+
+        if (!userId) {
+            throw {
+                message: "Unauthorized",
+                status: 401,
+            };
+        }
+
+        if (
+            typeof credential !== "string" ||
+            !credential
+        ) {
+            throw {
+                message: "Google credential is required",
+                status: 400,
+            };
+        }
+
+        let payload;
+
+        try {
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID!,
+            });
+
+            payload = ticket.getPayload();
+        } catch {
+            throw {
+                message: "Invalid Google credential",
+                status: 401,
+            };
+        }
+
+        if (
+            !payload?.sub ||
+            !payload.email ||
+            !payload.email_verified
+        ) {
+            throw {
+                message: "Google account verification failed",
+                status: 401,
+            };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw {
+                message: "User not found",
+                status: 404,
+            };
+        }
+
+        if (
+            user.email.toLowerCase() !==
+            payload.email.toLowerCase()
+        ) {
+            throw {
+                message:
+                    "Google account email must match your registered email.",
+                status: 400,
+            };
+        }
+
+        const linkedAccount = await prisma.user.findUnique({
+            where: {
+                googleId: payload.sub,
+            },
+        });
+
+        if (linkedAccount && linkedAccount.id !== user.id) {
+            throw {
+                message:
+                    "This Google account is already linked to another user.",
+                status: 409,
+            };
+        }
+
+        if (user.googleId && user.googleId !== payload.sub) {
+            throw {
+                message:
+                    "Your account is already linked to a different Google account.",
+                status: 409,
+            };
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                googleId: payload.sub,
+            },
+        });
+
+        return res.status(200).json({
+            message: "Google account linked successfully.",
+            result: null,
+            meta: null,
+        });
+    }
+);
+
 
 
 
@@ -467,5 +688,7 @@ export {
     updateUserInfo,
     forgetPassword,
     resetPassword,
-    profileCtrl
+    profileCtrl,
+    googleAuth,
+    linkGoogleAccount,
 }

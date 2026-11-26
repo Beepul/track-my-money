@@ -48,10 +48,11 @@ export default function DashboardHeader({user}: {user: User}) {
   console.log(user)
 
   const getProfilePlaceholder = () => {
-      const firstCharacter = user.first_name.split("")[0]
-      const secondCharacter = user.last_name.split("")[0]
-      return `${firstCharacter}${secondCharacter}`
-  }
+    const firstCharacter = user.first_name?.trim().charAt(0) || "";
+    const secondCharacter = user.last_name?.trim().charAt(0) || "";
+
+    return `${firstCharacter}${secondCharacter}`.toUpperCase() || "U";
+  };
   
 
   return (
@@ -67,7 +68,12 @@ export default function DashboardHeader({user}: {user: User}) {
       <div className="flex items-center justify-content-between flex-1 border-l p-6">
         {isDashboard &&
           <div>
-            <h2 className="text-t2m-text-primary lg:text-3xl text-xl mb-2">Welcome Back, <span className="capitalize">{user.first_name}!</span></h2>
+            <h2 className="text-t2m-text-primary lg:text-3xl text-xl mb-2">
+              Welcome Back,{" "}
+              <span className="capitalize">
+                {[user.first_name, user.last_name].filter(Boolean).join(" ")}!
+              </span>
+            </h2>
             <p className="text-sm lg:text-base text-t2m-text-secondary">Here's what happening with your transactions</p>
           </div>
         }
@@ -77,13 +83,20 @@ export default function DashboardHeader({user}: {user: User}) {
           <DropdownMenu>
             <DropdownMenuTrigger className="cursor-pointer">
               <div className="flex items-center gap-3">
-                {
-                  user.image ? (
-                    <Image src={profile} alt="profile" className="rounded-full object-cover h-[30px] w-[30px]" />
-                  ): (
-                    <span className="uppercase flex items-center justify-center font-semibold rounded-full bg-amber-800 text-white h-[40px] w-[40px]" >{getProfilePlaceholder()}</span>
-                  )
-                }
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={`${user.first_name}'s profile`}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-t2m-primary text-sm font-semibold text-white uppercase">
+                    {getProfilePlaceholder()}
+                  </span>
+                )}
                 <p className="capitalize">{user.first_name}{" "}{user.last_name}</p>
                 <ChevronDown size={18} />
               </div>

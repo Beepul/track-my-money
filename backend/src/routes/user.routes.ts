@@ -1,6 +1,6 @@
 import express from 'express'
 import { forgetPasswordSchema, loginUserSchema, registerUserSchema, resetPasswordSchema, updateUserSchema } from '../validations/user.schema'
-import { forgetPassword, loginUser, profileCtrl, refreshTokenCtrl, registerUser, resetPassword, updatePassword, updateUserInfo } from '../controllers/user.controller'
+import { forgetPassword, googleAuth, linkGoogleAccount, loginUser, profileCtrl, refreshTokenCtrl, registerUser, resetPassword, updatePassword, updateUserInfo } from '../controllers/user.controller'
 import { validateBody } from '../validations/validator'
 import { isAuthenticated } from '../middlewares/auth.middleware'
 import { uploadProfile } from '../middlewares/multer.middleware'
@@ -15,6 +15,12 @@ router.put('/update-password', isAuthenticated, updatePassword)
 router.put('/update-info',  isAuthenticated, uploadProfile.single('image'), validateBody(updateUserSchema) , updateUserInfo)
 router.post('/forget-password', validateBody(forgetPasswordSchema), forgetPassword)
 router.put('/reset-password/:token', validateBody(resetPasswordSchema), resetPassword)
+router.post("/google-auth", googleAuth);
+router.post(
+    "/link-google",
+    isAuthenticated,
+    linkGoogleAccount
+);
 
 
 export default router

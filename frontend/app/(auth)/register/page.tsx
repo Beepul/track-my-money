@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 
 import GoogleIcon from "@/public/google-icon.svg";
 import { registerUser, type RegisterFormState } from "./actions";
+import GoogleAuthButton from "@/components/layout/public/GoogleAuthButton";
 
 const initialState: RegisterFormState = {
     errors: {},
@@ -318,20 +319,9 @@ export default function RegisterPage() {
             </form>
 
             {/* Google Sign In */}
-            <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="mt-8 mb-6 h-12 w-full cursor-pointer border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-                <Image
-                    src={GoogleIcon}
-                    alt="Google"
-                    width={18}
-                    height={18}
-                />
-                Sign in with Google
-            </Button>
+            <div className="mt-8 mb-6">
+                <GoogleAuthButton mode="signin" />
+            </div>
 
             {/* Sign In Link */}
             <p className="text-sm text-t2m-text-secondary">
