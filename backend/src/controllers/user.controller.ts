@@ -679,6 +679,126 @@ const linkGoogleAccount = catchAsync(
 
 
 
+const uploadProfileImage = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.userInfo?.id;
+
+        // Delete the newly uploaded file if an error occurs
+        const deleteUploadedFile = async () => {
+            if (req.file) {
+                await fs.promises.unlink(req.file.path).catch(() => {});
+            }
+        };
+
+        if (!userId) {
+            await deleteUploadedFile();
+
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select a profile image.",
+            });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            await deleteUploadedFile();
+
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+        const backendUrl = process.env.BACKEND_PUBLIC_URL;
+
+        if (!backendUrl) {
+            await deleteUploadedFile();
+
+            return res.status(500).json({
+                success: false,
+                message: "Backend public URL is not configured.",
+            });
+        }
+
+        // Generate the image URL using your existing uploads/profile folder
+        const imageUrl = `${backendUrl.replace(/\/$/, "")}/api/v1/uploads/profile/${req.file.filename}`;
+
+        try {
+            await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    image: imageUrl,
+                },
+            });
+
+            // Remove previous locally uploaded profile image
+            if (user.image) {
+                try {
+                    const previousUrl = new URL(user.image);
+                    const baseUrl = new URL(backendUrl);
+
+                    const profilePrefix = "/api/v1/uploads/profile/";
+
+                    if (
+                        previousUrl.origin === baseUrl.origin &&
+                        previousUrl.pathname.startsWith(profilePrefix)
+                    ) {
+                        const filename = previousUrl.pathname.slice(
+                            profilePrefix.length
+                        );
+
+                        // Only allow a single filename, not nested paths
+                        if (
+                            filename &&
+                            filename === path.basename(filename)
+                        ) {
+                            const previousImagePath = path.resolve(
+                                process.cwd(),
+                                "uploads",
+                                "profile",
+                                filename
+                            );
+
+                            // Never delete the newly uploaded file
+                            if (
+                                previousImagePath !== path.resolve(req.file.path)
+                            ) {
+                                await fs.promises
+                                    .unlink(previousImagePath)
+                                    .catch(() => {});
+                            }
+                        }
+                    }
+                } catch {
+                    // Ignore invalid or external image URLs
+                }
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Profile image uploaded successfully.",
+                image: imageUrl,
+            });
+        } catch (error) {
+            await deleteUploadedFile();
+            throw error;
+        }
+    }
+);
+
+
+
+
 
 export {
     registerUser,
@@ -691,4 +811,5 @@ export {
     profileCtrl,
     googleAuth,
     linkGoogleAccount,
+    uploadProfileImage,
 }

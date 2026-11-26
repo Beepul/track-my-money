@@ -22,6 +22,7 @@ import {
 } from "@/app/dashboard/settings/actions";
 import { toast } from "sonner";
 import GoogleLinkAccount from "./GoogleLinkAccount.component";
+import ProfilePhotoUpload from "./ProfilePhotoUpload.component";
 
 const initialState: UpdateAccountState = {
     success: false,
@@ -76,38 +77,11 @@ export default function AccountSettingForm({ user }: { user: User }) {
 
                         <FieldGroup className="flex flex-col items-center gap-6 lg:flex-row lg:items-start">
                             {/* Profile Picture */}
-                            <div className="mb-6 flex flex-col items-center gap-4 lg:mb-0">
-                                {user.image ? (
-                                    <Image
-                                        src={user.image}
-                                        alt={`${user.first_name}'s profile`}
-                                        width={100}
-                                        height={100}
-                                        className="h-[100px] w-[100px] rounded-full object-cover border border-border"
-                                        referrerPolicy="no-referrer"
-                                    />
-                                ) : (
-                                    <span className="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-t2m-primary text-3xl font-semibold text-white uppercase">
-                                        {getProfilePlaceholder()}
-                                    </span>
-                                )}
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="lg"
-                                    className="cursor-pointer bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
-                                >
-                                    <Camera size={16} />
-                                    Change Photo
-                                </Button>
-
-                                <Input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    className="hidden"
-                                />
-                            </div>
+                            <ProfilePhotoUpload
+                                firstName={user.first_name}
+                                lastName={user.last_name}
+                                image={user.image}
+                            />
 
                             {/* Account Information */}
                             <div className="flex-1 w-full">

@@ -1,6 +1,6 @@
 import express from 'express'
 import { forgetPasswordSchema, loginUserSchema, registerUserSchema, resetPasswordSchema, updateUserSchema } from '../validations/user.schema'
-import { forgetPassword, googleAuth, linkGoogleAccount, loginUser, profileCtrl, refreshTokenCtrl, registerUser, resetPassword, updatePassword, updateUserInfo } from '../controllers/user.controller'
+import { forgetPassword, googleAuth, linkGoogleAccount, loginUser, profileCtrl, refreshTokenCtrl, registerUser, resetPassword, updatePassword, updateUserInfo, uploadProfileImage } from '../controllers/user.controller'
 import { validateBody } from '../validations/validator'
 import { isAuthenticated } from '../middlewares/auth.middleware'
 import { uploadProfile } from '../middlewares/multer.middleware'
@@ -20,6 +20,12 @@ router.post(
     "/link-google",
     isAuthenticated,
     linkGoogleAccount
+);
+router.put(
+    "/profile/image",
+    isAuthenticated,
+    uploadProfile.single("image"),
+    uploadProfileImage
 );
 
 
